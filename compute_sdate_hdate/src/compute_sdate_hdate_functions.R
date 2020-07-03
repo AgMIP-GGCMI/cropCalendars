@@ -246,7 +246,9 @@ calcHarvestDateVector <- function(croppar,
   } else { hd_wetseas <- doy_wet_first+rphase_duration }
   
   # Warmest day of the year ----
-  hd_temp_base <- midday[monthly_temp==max(monthly_temp)][1]+rphase_duration
+  #hd_temp_base <- midday[monthly_temp==max(monthly_temp)][1]+rphase_duration
+  warmest_day <- midday[monthly_temp==max(monthly_temp)][1]
+  hd_temp_base <- ifelse(sowing_season == "winter", warmest_day, warmest_day+rphase_duration)
   
   # First hot day ----
   doy_exceed_opt_rp <- calcDoyCrossThreshold(monthly_temp, temp_opt_rphase)[["doy_cross_up"]]
