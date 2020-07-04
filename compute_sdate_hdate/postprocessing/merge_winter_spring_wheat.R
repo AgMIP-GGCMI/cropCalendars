@@ -10,12 +10,10 @@ rm(list=ls(all=TRUE))
 oncluster <- TRUE
 
 if(oncluster==TRUE) {
-  working.dir <- "/p/projects/macmit/users/minoli/PROJECTS/CROP_PHENOLOGY_v01/SCRIPTS/GROWING_PERIODS_PACKAGE/"
+  working.dir <- "/home/minoli/crop_calendars_gitlab/crop_phen_paper/compute_sdate_hdate/"
 } else {
   working.dir <- "D:/PROJECTS/GROWING_PERIODS_PACKAGE/"
 }
-
-climate.dir <- paste0(working.dir, "DATA/CLIMATE/")
 
 # PACKAGES ----
 library(ncdf4)
@@ -23,10 +21,12 @@ library(data.table)
 library(ggplot2)
 
 # FUNCTIONS ----
-source(paste0(working.dir, "CODE/src/units.R"))
-source(paste0(working.dir, "CODE/src/ggplot.map.general.R"))
-source(paste0(working.dir, "CODE/configuration/configuration.R"))
-source(paste0(working.dir, "CODE/configuration/graphics.R"))
+source(paste0(working.dir, "src/units.R"))
+source(paste0(working.dir, "src/ggplot.map.general.R"))
+source(paste0(working.dir, "configuration/configuration.R"))
+source(paste0(working.dir, "configuration/graphics.R"))
+
+#climate.dir <- paste0(project.dir, "DATA/CLIMATE/")
 
 # import arguments from the job script ----
 options(echo=FALSE) # if want see commands in output file

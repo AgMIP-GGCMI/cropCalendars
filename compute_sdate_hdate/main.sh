@@ -11,7 +11,7 @@
 #SBATCH --error=out_err/gp_%j_%a.err
 
 # #SBATCH --array=1-12 # (12 scenarios for preprocessing climate)
-#SBATCH --array=1-2 # 1-72 (12 scenarios * 6 crops)
+#SBATCH --array=1-72 # 1-72 (12 scenarios * 6 crops)
 
 module load intel/2018.1
 
