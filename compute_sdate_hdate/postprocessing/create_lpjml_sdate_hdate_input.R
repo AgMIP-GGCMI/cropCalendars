@@ -19,9 +19,6 @@ if(oncluster==TRUE) {
   working.dir <- "D:/PROJECTS/GROWING_PERIODS_PACKAGE/"
 }
 
-#climate.dir <- paste0(working.dir, "DATA/CLIMATE/")
-cropcal.dir   <- paste0(project.dir, "DATA/CROP_CALENDARS/LPJML_INPUT/")
-
 makeplot <- TRUE
 
 # PACKAGES ----
@@ -36,6 +33,7 @@ source(paste0(working.dir, "configuration/graphics.R"))
 source(paste0(working.dir, "configuration/configuration.R"))
 source(paste0(working.dir, "postprocessing/functions_lpjml_input_output.R"))
 
+cropcal.dir   <- paste0(project.dir, "DATA/CROP_CALENDARS/LPJML_INPUT/")
 
 NCFTS <- 12
 CFTBANDS <- 24
