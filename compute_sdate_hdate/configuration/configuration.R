@@ -28,7 +28,7 @@ library(scales) # adds some functionalities to ggplot2 plot scales
 # PATHS ----
 project.dir   <- "/p/projects/macmit/users/minoli/PROJECTS/CROP_PHENOLOGY_v01/"
 climate.dir   <- paste0(project.dir, "DATA/CLIMATE/")
-input.dir     <- paste0(working.dir, "DATA/INPUT/")
+input.dir     <- paste0(project.dir, "DATA/INPUT/")
 output.dir    <- paste0(working.dir, "DATA/OUTPUT/")
 figure.dir    <- paste0(working.dir, "DATA/FIGURES/")
 
@@ -37,8 +37,8 @@ grid.fn <- paste0(input.dir, "grid.bin")
 NCELLS <- 67420
 
 # Parameters file ----
-croppar.fn <- paste0(working.dir, "CODE/parameters/", "crop_parameters.txt")
-#croppar.fn <- paste0(working.dir, "CODE/parameters/", "crop_parameters_original_Minoli_et_al_2019.txt")
+croppar.fn <- paste0(working.dir, "parameters/", "crop_parameters.txt")
+#croppar.fn <- paste0(working.dir, "parameters/", "crop_parameters_original_Minoli_et_al_2019.txt")
 
 # Simulation climate settings file ----
 simsetting.fn <- paste0(project.dir, "DATA/INPUT/", "climate_scenarios_to_simulate.txt")
@@ -83,7 +83,7 @@ names(coord.df) <- c("lon", "lat")
 
 
 # Constants
-source(paste0(working.dir, "CODE/parameters/", "constant_values.R"))
+source(paste0(working.dir, "parameters/", "constant_values.R"))
 
 # Parameters
 cat("Importing parameter table for all crops ...",
@@ -105,5 +105,5 @@ dbatch <- read.table(simsetting.fn, header = TRUE, stringsAsFactors = FALSE)
 cat("Importing graphics for plotting (labelling and color schemes) ...",
     "-----------------------------------------------------------------",
     sep = "\n")
-source(paste0(working.dir, "CODE/configuration/", "graphics.R"))
+source(paste0(working.dir, "configuration/", "graphics.R"))
 
