@@ -29,8 +29,8 @@ library(scales) # adds some functionalities to ggplot2 plot scales
 project.dir   <- "/p/projects/macmit/users/minoli/PROJECTS/CROP_PHENOLOGY_v01/"
 climate.dir   <- paste0(project.dir, "DATA/CLIMATE/")
 input.dir     <- paste0(project.dir, "DATA/INPUT/")
-output.dir    <- paste0(working.dir, "DATA/OUTPUT/")
-figure.dir    <- paste0(working.dir, "DATA/FIGURES/")
+output.dir    <- paste0(project.dir, "DATA/OUTPUT/")
+figure.dir    <- paste0(project.dir, "DATA/FIGURES/")
 
 # Grid file ----
 grid.fn <- paste0(input.dir, "grid.bin")
@@ -41,7 +41,7 @@ croppar.fn <- paste0(working.dir, "parameters/", "crop_parameters.txt")
 #croppar.fn <- paste0(working.dir, "parameters/", "crop_parameters_original_Minoli_et_al_2019.txt")
 
 # Simulation climate settings file ----
-simsetting.fn <- paste0(project.dir, "DATA/INPUT/", "climate_scenarios_to_simulate.txt")
+simsetting.fn <- paste0(working.dir, "configuration/", "climate_scenarios_to_simulate.txt")
 
 # Crops
 crops <- c("Maize", "Rice", "Sorghum", "Soybean", "Spring_Wheat", "Winter_Wheat")

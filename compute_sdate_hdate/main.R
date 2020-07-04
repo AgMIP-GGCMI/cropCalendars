@@ -15,7 +15,7 @@ rm(list=ls(all=TRUE))
 oncluster <- TRUE
 
 if(oncluster==TRUE) {
-working.dir <- "/p/projects/macmit/users/minoli/PROJECTS/CROP_PHENOLOGY_v01/SCRIPTS/GROWING_PERIODS_PACKAGE/"
+working.dir <- "/home/minoli/crop_calendars_gitlab/crop_phen_paper/compute_sdate_hdate/"
 } else {
   working.dir <- "D:/PROJECTS/GROWING_PERIODS_PACKAGE/"
 }
@@ -23,12 +23,12 @@ working.dir <- "/p/projects/macmit/users/minoli/PROJECTS/CROP_PHENOLOGY_v01/SCRI
 
 # READ CONFIGURATION ----
 #___________________________________________________________#
-source(paste0(working.dir, "CODE/configuration/configuration.R"))
+source(paste0(working.dir, "configuration/configuration.R"))
 
 # IMPORT FUNCTIONS ----
 #___________________________________________________________#
-source(paste0(working.dir, "CODE/src/compute_sdate_hdate_functions.R"))
-source(paste0(working.dir, "CODE/src/ggplot.map.general.R"))
+source(paste0(working.dir, "src/compute_sdate_hdate_functions.R"))
+source(paste0(working.dir, "src/ggplot.map.general.R"))
 
 # SELECT SCENARIO ----
 #___________________________________________________________#
