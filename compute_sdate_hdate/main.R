@@ -137,7 +137,9 @@ cat("\n", paste("Start computing crop calendar for", CROP, "..."),
            "-------------------------------------------------------", sep = "\n")
 
   crop_parameters <- subset(crop_parameters_all, subset = crop_name %in% CROP)
-  
+ 
+print(t(crop_parameters))
+ 
   OUTPUT_DF <- NULL
   
    #CELL_SUBSET <- as.numeric(rownames(subset(coord.df, lon == -100.25 & lat > 30 & lat < 60)))
