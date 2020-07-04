@@ -140,7 +140,7 @@ cat("\n", paste("Start computing crop calendar for", CROP, "..."),
   
   OUTPUT_DF <- NULL
   
-   #CELL_SUBSET <- as.numeric(rownames(subset(coord.df, lon > 140 & lon < 155 & lat > -45 & lat < -15)))
+   #CELL_SUBSET <- as.numeric(rownames(subset(coord.df, lon == -100.25 & lat > 30 & lat < 60)))
    #for (COORD in CELL_SUBSET) { # NCELLS
   for (COORD in c(1:NCELLS)) { # NCELLS
     PIXEL_DF <- mainfunction(coord = COORD, dtclm = DTclm)
