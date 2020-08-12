@@ -34,11 +34,13 @@ source(paste0(working.dir, "configuration/configuration.R"))
 source(paste0(working.dir, "postprocessing/functions_lpjml_input_output.R"))
 
 cropcal.dir   <- paste0(project.dir, "DATA/CROP_CALENDARS/LPJML_INPUT/")
+#cropcal.dir   <- paste0(project.dir, "DATA/CROP_CALENDARS/LPJML_INPUT_swheat_only/") # for sims with spring wheat only everywhere
 
 NCFTS <- 12
 CFTBANDS <- 24
-#crops <- c("Maize", "Rice", "Sorghum", "Soybean", "Spring_Wheat", "Winter_Wheat")
+#e.g. crops <- c("Maize", "Rice", "Sorghum", "Soybean", "Spring_Wheat", "Winter_Wheat")
 crops <- c("Maize", "Rice", "Sorghum", "Soybean", "Wheat")
+#crops <- c("Maize", "Rice", "Sorghum", "Soybean", "Spring_Wheat")                    # for sims with spring wheat only everywhere
 
 # import arguments from the job script ----
 options(echo=FALSE) # if want see commands in output file
@@ -122,6 +124,8 @@ NYEARS <- LYEAR-FYEAR+1
 
 cfts <- rep(c("Wheat","Rice","Maize","Sorghum","Pulses","Temperate_Roots",
               "Tropical_Roots","Sunflower","Soybean","Groundnut","Rapeseed","Sugarcane"), 2)
+#cfts <- rep(c("Spring_Wheat","Rice","Maize","Sorghum","Pulses","Temperate_Roots",
+ #             "Tropical_Roots","Sunflower","Soybean","Groundnut","Rapeseed","Sugarcane"), 2)      # for sims with spring wheat only everywhere
 irrs <- rep(c("Rainfed", "Irrigated"), each = NCFTS)
 bands <- which(cfts%in%crops)
 
