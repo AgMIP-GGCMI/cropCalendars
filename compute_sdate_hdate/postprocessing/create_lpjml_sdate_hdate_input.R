@@ -14,13 +14,10 @@ rm(list=ls(all=TRUE))
 oncluster <- TRUE
 
 if(oncluster==TRUE) {
-  working.dir <- "/p/projects/macmit/users/minoli/PROJECTS/CROP_PHENOLOGY_v01/SCRIPTS/GROWING_PERIODS_PACKAGE/"
+  working.dir <- "/home/minoli/crop_calendars_gitlab/crop_phen_paper/compute_sdate_hdate/"
 } else {
   working.dir <- "D:/PROJECTS/GROWING_PERIODS_PACKAGE/"
 }
-
-climate.dir <- paste0(working.dir, "DATA/CLIMATE/")
-cropcal.dir   <- paste0(working.dir, "DATA/LPJML_INPUT/")
 
 makeplot <- TRUE
 
@@ -30,33 +27,20 @@ library(data.table)
 library(ggplot2)
 
 # FUNCTIONS ----
-source(paste0(working.dir, "CODE/src/units.R"))
-source(paste0(working.dir, "CODE/src/ggplot.map.general.R"))
-source(paste0(working.dir, "CODE/configuration/graphics.R"))
-source(paste0(working.dir, "CODE/configuration/configuration.R"))
-source(paste0(working.dir, "CODE/postprocessing/functions_lpjml_input_output.R"))
+source(paste0(working.dir, "src/units.R"))
+source(paste0(working.dir, "src/ggplot.map.general.R"))
+source(paste0(working.dir, "configuration/graphics.R"))
+source(paste0(working.dir, "configuration/configuration.R"))
+source(paste0(working.dir, "postprocessing/functions_lpjml_input_output.R"))
 
-
-
-# rm(list=ls(all=TRUE))
-# 
-# 
-# source("/p/projects/macmit/users/minoli/PROJECTS/CROP_PHENOLOGY_v01/SCRIPTS/crop_phen_0_master_script.R")
-# source("/p/projects/macmit/users/minoli/PROJECTS/CROP_PHENOLOGY_v01/SCRIPTS/GROWING_PERIODS_PACKAGE/CODE/postprocessing/functions_lpjml_input_output.R")
-# 
-# makeplot=TRUE
-# 
-# working.dir   <- "/p/projects/macmit/users/minoli/PROJECTS/CROP_PHENOLOGY_v01/"
-# input.dir    <- paste0(working.dir, "SCRIPTS/GROWING_PERIODS_PACKAGE/DATA/INPUT/")
-# output.dir    <- paste0(working.dir, "SCRIPTS/GROWING_PERIODS_PACKAGE/DATA/OUTPUT/")
-# cropcal.dir   <- paste0(working.dir, "DATA/CROP_CALENDARS/")
-
-
+cropcal.dir   <- paste0(project.dir, "DATA/CROP_CALENDARS/LPJML_INPUT/")
+#cropcal.dir   <- paste0(project.dir, "DATA/CROP_CALENDARS/LPJML_INPUT_swheat_only/") # for sims with spring wheat only everywhere
 
 NCFTS <- 12
 CFTBANDS <- 24
-#crops <- c("Maize", "Rice", "Sorghum", "Soybean", "Spring_Wheat", "Winter_Wheat")
+#e.g. crops <- c("Maize", "Rice", "Sorghum", "Soybean", "Spring_Wheat", "Winter_Wheat")
 crops <- c("Maize", "Rice", "Sorghum", "Soybean", "Wheat")
+#crops <- c("Maize", "Rice", "Sorghum", "Soybean", "Spring_Wheat")                    # for sims with spring wheat only everywhere
 
 # import arguments from the job script ----
 options(echo=FALSE) # if want see commands in output file
@@ -140,6 +124,8 @@ NYEARS <- LYEAR-FYEAR+1
 
 cfts <- rep(c("Wheat","Rice","Maize","Sorghum","Pulses","Temperate_Roots",
               "Tropical_Roots","Sunflower","Soybean","Groundnut","Rapeseed","Sugarcane"), 2)
+#cfts <- rep(c("Spring_Wheat","Rice","Maize","Sorghum","Pulses","Temperate_Roots",
+ #             "Tropical_Roots","Sunflower","Soybean","Groundnut","Rapeseed","Sugarcane"), 2)      # for sims with spring wheat only everywhere
 irrs <- rep(c("Rainfed", "Irrigated"), each = NCFTS)
 bands <- which(cfts%in%crops)
 

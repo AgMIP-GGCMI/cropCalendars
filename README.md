@@ -6,18 +6,18 @@ Contact: sara.minoli@pik-potsdam.de
 
 This folder includes R-coded scripts for computing sowing and harvest dates following the approaches from Waha et al. (2012) and Minoli et al. (2019).
 
-Necessary inputs:
-- Create a directory: e.g. ./DATA/INPUT
-- Long-term monthly average of temperature (degC), precipitation (mm), potential evapotranspiration (mm), P/PET ratio (frac), stored in a datatable with header: lon, lat, month, tas, pr, pet, ppet
-- Grid coordinates (by default LPJmL grid.bin is used, which is converted into a dataframe)
-
 Running the code:
+
 1) ./compute_sdate_hdate/configuration/configuration.R 
 - Define I/O paths
 - Define crops to simulate
+- Grid coordinates (by default LPJmL grid.bin is used, which is converted into a dataframe)
 
 2) ./compute_sdate_hdate/configuration/climate_scenarios_to_simulate.txt
 - Write a table with information on climate scenarios and time slices to simulate
+
+3) ./preprocessing/prepare_montly_climate.R
+- Compute long-term monthly average of temperature (degC), precipitation (mm), potential evapotranspiration (mm), P/PET ratio (frac), stored in a datatable with header: lon, lat, month, tas, pr, pet, ppet
 
 3) ./compute_sdate_hdate/main.R
 - Choose if On Cluster TRUE/FALSE
