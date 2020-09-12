@@ -31,3 +31,4 @@ step1	step2	gcm	scenario.growp	syear.growp	eyear.growp	scenario.clm	syear.clm	ey
 0	1	MIROC5	historical	1986	2005	rcp60	2080	2099	2005CO2
 0	1	MIROC5	rcp60	2060	2079	rcp60	2080	2099	2005CO2
 0	1	MIROC5	rcp60	2080	2099	rcp60	2080	2099	2005CO2
+1	0	WFDEI	historical	1986	2005	historical	1986	2005	dynaCO2   
