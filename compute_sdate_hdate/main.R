@@ -49,7 +49,7 @@ dbatch1 <- subset(dbatch, subset = (step1!=0)) # remove scenarios that are not n
 rownames(dbatch1) <- NULL
 
 repcrops  <- rep(crops, each = nrow(dbatch1))
-CROPIDX      <- which(crops==repcrops[args])
+CROPIDX   <- which(crops==repcrops[args])
 ARG       <- args-((CROPIDX-1)*nrow(dbatch1))
 
 dbatch2 <- dbatch1[ARG,]
