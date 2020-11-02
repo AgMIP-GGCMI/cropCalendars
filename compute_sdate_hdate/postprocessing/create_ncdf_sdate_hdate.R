@@ -86,7 +86,7 @@ for (cc in 1:length(crops)) {
     sdate <- round(DTcr$sowing_doy)
    
     ARnc <- lpjml.array.to.nccube(ARin = sdate, ARgrid = DTgrid, years = 2000)
-    FNAME <- paste0(ncdir, "nc_output_crop_calendars_", crops[cc], "_", irrigs[ir], "_", GCM, "_", SCgp, "_", SYgp, "_", EYgp)
+    FNAME <- paste0(ncdir, "nc_output_", "sdate_", crops[cc], "_", irrigs[ir], "_", GCM, "_", SCgp, "_", SYgp, "_", EYgp)
     write.ncdf.1cube(cube = ARnc, fname = FNAME, cropname = CROP, varshort = "sdate", varlong = "sowing date", years = 2000, unit = "DOY", precision = "float")
     
 #    cube = ARnc; fname = FNAME; cropname = CROP; varshort = "sdate"; varlong = "sowing date"; years = 2000; unit = "DOY"; precision = "float"
@@ -94,7 +94,7 @@ for (cc in 1:length(crops)) {
     
     hdate <- round(DTcr$maturity_doy)
     ARnc <- lpjml.array.to.nccube(ARin = hdate, ARgrid = DTgrid, years = 2000)
-    FNAME <- paste0(ncdir, "nc_output_crop_calendars_", crops[cc], "_", irrigs[ir], "_", GCM, "_", SCgp, "_", SYgp, "_", EYgp)
+    FNAME <- paste0(ncdir, "nc_output_", "hdate_", crops[cc], "_", irrigs[ir], "_", GCM, "_", SCgp, "_", SYgp, "_", EYgp)
     write.ncdf.1cube(cube = ARnc, fname = FNAME, cropname = CROP, varshort = "hdate", varlong = "harvest date", years = 2000, unit = "DOY", precision = "float")
     
     print(paste(crops[cc], irrigs[ir]))
