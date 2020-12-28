@@ -26,7 +26,7 @@ Running the code:
 4) ./compute_sdate_hdate/main.sh
 - Define array for running scenarios and crops in batch
 - e.g. for 12 climate scenarios & 6 crops use #SBATCH --array=1-72
-- To run it type: sbatch main.sh
+- To run it type: sbatch main.sh (note: module purge might be needed beforehand, if need to open old Rdata files)
 
 Output:
 - Create a directory: e.g. ./DATA/OUTPUT
