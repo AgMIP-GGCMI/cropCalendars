@@ -9,7 +9,7 @@ rm(list=ls(all=TRUE))
 oncluster <- TRUE
 
 if(oncluster==TRUE) {
-  working.dir <- "/p/projects/macmit/users/minoli/PROJECTS/CROP_PHENOLOGY_v01/SCRIPTS/GROWING_PERIODS_PACKAGE/"
+  working.dir <- "/home/minoli/crop_calendars_gitlab/crop_phen_paper/compute_sdate_hdate/"
 } else {
   working.dir <- "D:/PROJECTS/GROWING_PERIODS_PACKAGE/"
 }
@@ -20,17 +20,14 @@ library(data.table)
 library(ggplot2)
 
 # FUNCTIONS ----
-source(paste0(working.dir, "CODE/src/units.R"))
-source(paste0(working.dir, "CODE/src/ggplot.map.general.R"))
-source(paste0(working.dir, "CODE/configuration/configuration.R"))
-source(paste0(working.dir, "CODE/configuration/graphics.R"))
+source(paste0(working.dir, "src/units.R"))
+source(paste0(working.dir, "src/ggplot.map.general.R"))
+source(paste0(working.dir, "configuration/configuration.R"))
+source(paste0(working.dir, "configuration/graphics.R"))
 
 #PATHS ----
-climate.dir <- paste0(working.dir, "DATA/CLIMATE/")
 mirca.dir   <- "/p/projects/macmit/users/minoli/DATA/MIRCA2000/"
-output.dir  <- paste0(working.dir, "DATA/MIRCA2000/")
-figure.dir  <- paste0(working.dir, "DATA/MIRCA2000/")
-
+output.dir <- figure.dir <- paste0(project.dir, "DATA/MASKS/")
 # Crop naming MIRCA
 crop_mirca_ir <- c(1, 2, 3, 7, 8)
 crop_mirca_rf <- crop_mirca_ir+26 # mirca has 26 crops
@@ -62,7 +59,8 @@ rm(DTmirca_ir, DTmirca_rf)
 
 
 # Get climate AgMERRA (MTEMP) ----
-DTclm <- DT <- get(load(file = paste0(climate.dir, "DT_AgMERRA_monthly_average_1980_2010", ".Rdata")))
+#DTclm <- DT <- get(load(file = paste0(climate.dir, "DT_AgMERRA_monthly_average_1980_2010", ".Rdata")))
+DTclm <- DT <- get(load(file = paste0(climate.dir, "DT_average_monthly_climate_WFDEI_historical_1986_2005", ".Rdata")))
 rm(DT)
 
 colnames(DTclm)[colnames(DTclm)=="mtemp"] <- "tas"
