@@ -17,7 +17,7 @@ oncluster <- TRUE
 if(oncluster==TRUE) {
 working.dir <- "/home/minoli/crop_calendars_gitlab/crop_phen_paper/compute_sdate_hdate/"
 } else {
-  working.dir <- "D:/PROJECTS/GROWING_PERIODS_PACKAGE/"
+  working.dir <- "C:/Users/minoli/Documents/Work/crop_calendars_gitlab/crop_phen_paper/compute_sdate_hdate/"
 }
 
 
@@ -38,7 +38,7 @@ if(oncluster==TRUE) {
 options(echo=FALSE) # if you want see commands in output file
 args <- as.numeric(commandArgs(trailingOnly = TRUE))
 } else {
-  args <- 15  
+  args <- 78
 }
 print(args)
 
@@ -143,6 +143,7 @@ print(t(crop_parameters))
   OUTPUT_DF <- NULL
   
    #CELL_SUBSET <- as.numeric(rownames(subset(coord.df, lon == -100.25 & lat > 30 & lat < 60)))
+  # COORD <- 47992
    #for (COORD in CELL_SUBSET) { # NCELLS
   for (COORD in c(1:NCELLS)) { # NCELLS
     PIXEL_DF <- mainfunction(coord = COORD, dtclm = DTclm)

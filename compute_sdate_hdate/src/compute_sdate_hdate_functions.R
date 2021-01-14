@@ -107,23 +107,36 @@ calcSeasonality <- function(monthly_temp, monthly_prec, temp_min = TEMPMIN) {
 # Calculate sowing date (Waha et al., 2012)
 calcSowingDate <- function(croppar, monthly_temp, monthly_ppet, seasonality, lat) {
   
+  # Middle day of each month
+  midday <- c(15,43,74,104,135,165,196,227,257,288,318,349) #midday[NMONTH+1]
+  
   # extract individual parameter names and values
   for(i in colnames(croppar)) {
     assign(i, croppar[[i]])
   }
   
+  # Constrain first possible date for winter crop sowing
   earliest_sdate <- ifelse(lat>=0, initdate.sdatenh, initdate.sdatesh)
   earliest_smonth <- doy2month(earliest_sdate)
   DEFAULT_DOY    <- ifelse(lat>=0, 1, 182)
   DEFAULT_MONTH <- 0
   
+  # First day of actual winter (for vernalizing crops)
   firstwinterdoy <- calcDoyCrossThreshold(monthly_temp, temp_fall)[["doy_cross_down"]]
+  # First day of "warm winter" (for non-vernalizing winter-sown crops)
+  if (firstwinterdoy==-9999 & (seasonality%in%c("TEMP", "TEMPREC", "PRECTEMP"))) {
+    # 2 months before coldest midday
+    coldestday <- midday[which(monthly_temp==min(monthly_temp))]
+    firstwinterdoy <- ifelse(coldestday-60<=0, coldestday-60+365, coldestday-60)
+  }
   firstwintermonth <- ifelse(firstwinterdoy==-9999, DEFAULT_MONTH, doy2month(firstwinterdoy))
   firstwinterdoy <- ifelse(firstwinterdoy==-9999, DEFAULT_DOY, firstwinterdoy)
   
+  # First day of spring
   firstspringdoy <- calcDoyCrossThreshold(monthly_temp, temp_spring)[["doy_cross_up"]]
   firstspringmonth <- ifelse(firstspringdoy==-9999, DEFAULT_MONTH, doy2month(firstspringdoy))
   
+  # If winter type
   if (calcmethod_sdate=="WTYP_CALC_SDATE") {
     if(firstwinterdoy > earliest_sdate & firstwintermonth!=DEFAULT_MONTH) {
       sowing_month <- firstwintermonth

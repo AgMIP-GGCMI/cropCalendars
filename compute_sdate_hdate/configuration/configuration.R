@@ -26,7 +26,8 @@ library(scales) # adds some functionalities to ggplot2 plot scales
 #___________________________________________________________#
 
 # PATHS ----
-project.dir   <- "/p/projects/macmit/users/minoli/PROJECTS/CROP_PHENOLOGY_v01/"
+#project.dir   <- "/p/projects/macmit/users/minoli/PROJECTS/CROP_PHENOLOGY_v01/"
+project.dir   <- "C:/Users/minoli/Documents/Work/PROJECTS/CROP_PHENOLOGY_v01/"
 climate.dir   <- paste0(project.dir, "DATA/CLIMATE/")
 input.dir     <- paste0(project.dir, "DATA/INPUT/")
 output.dir    <- paste0(project.dir, "DATA/CROP_CALENDARS/DT/")
