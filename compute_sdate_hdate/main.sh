@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#SBATCH --qos=short
-#SBATCH --time=03:30:00
-#SBATCH --partition=standard
+# #SBATCH --qos=short
+#SBATCH --qos=standby
+#SBATCH --time=02:00:00
 #SBATCH --job-name=grow_periods
 #SBATCH --account=macmit
 #SBATCH --mail-user=sara.minoli
@@ -13,12 +13,13 @@
 # #SBATCH --array=1-12 # (12 scenarios for: prepare_monthly_climate.R; create_lpjml_sdate_hdate_input.R)
 # #SBATCH --array=13     # (1 additional scenario for prepare_monthly_climate_WFDEI.R)
 # #SBATCH --array=1-78 # 1-78 (13 scenarios * 6 crops)
-# #SBATCH --array=13,26,39,52,65,78 (WFDEI only)
+#SBATCH --array=13,26,39,52,65,78 (WFDEI only)
 # #SBATCH --array=13 # (1-13, 13=WFDEI, for ./postprocessing/create_lpjml_sdate_hdate_input.R)
 
-module load intel/2018.1
+#module load intel/2018.1
+#module load R/3.4.4
 
-module load R/3.4.4
+module load piam
 
 echo "SLURM_ARRAY_TASK_ID: " $SLURM_ARRAY_TASK_ID
 
@@ -32,9 +33,9 @@ echo "SLURM_ARRAY_TASK_ID: " $SLURM_ARRAY_TASK_ID
 # R -f main.R --args $SLURM_ARRAY_TASK_ID
 
 # Array 1-72
-# R -f ./postprocessing/merge_winter_spring_wheat.R --args $SLURM_ARRAY_TASK_ID
+R -f ./postprocessing/merge_winter_spring_wheat.R --args $SLURM_ARRAY_TASK_ID
 
-R -f ./postprocessing/mirca2000.R
+# R -f ./postprocessing/mirca2000.R
 
 # Array 1-12 or 13
 # R -f ./postprocessing/create_lpjml_sdate_hdate_input.R --args  $SLURM_ARRAY_TASK_ID

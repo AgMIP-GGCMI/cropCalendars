@@ -124,10 +124,12 @@ calcSowingDate <- function(croppar, monthly_temp, monthly_ppet, seasonality, lat
   # First day of actual winter (for vernalizing crops)
   firstwinterdoy <- calcDoyCrossThreshold(monthly_temp, temp_fall)[["doy_cross_down"]]
   # First day of "warm winter" (for non-vernalizing winter-sown crops)
-  if (firstwinterdoy==-9999 & (seasonality%in%c("TEMP", "TEMPREC", "PRECTEMP"))) {
-    # 2 months before coldest midday
+  if (min(monthly_temp>basetemp.low) &&
+      (seasonality%in%c("TEMP", "TEMPREC", "PRECTEMP"))) {
+    # 2.5 months before coldest midday
+      #(75 days seems a good approximation for both India and South US)
     coldestday <- midday[which(monthly_temp==min(monthly_temp))]
-    firstwinterdoy <- ifelse(coldestday-60<=0, coldestday-60+365, coldestday-60)
+    firstwinterdoy <- ifelse(coldestday-75<=0, coldestday-75+365, coldestday-75)
   }
   firstwintermonth <- ifelse(firstwinterdoy==-9999, DEFAULT_MONTH, doy2month(firstwinterdoy))
   firstwinterdoy <- ifelse(firstwinterdoy==-9999, DEFAULT_DOY, firstwinterdoy)
