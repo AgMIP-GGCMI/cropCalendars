@@ -125,7 +125,7 @@ calcSowingDate <- function(croppar, monthly_temp, monthly_ppet, seasonality, lat
   firstwinterdoy <- calcDoyCrossThreshold(monthly_temp, temp_fall)[["doy_cross_down"]]
   # First day of "warm winter" (for non-vernalizing winter-sown crops)
   if (min(monthly_temp>basetemp.low) &&
-      (seasonality%in%c("TEMP", "TEMPREC", "PRECTEMP"))) {
+      (seasonality%in%c("TEMP", "TEMPREC", "PRECTEMP", "PREC"))) {
     # 2.5 months before coldest midday
       #(75 days seems a good approximation for both India and South US)
     coldestday <- midday[which(monthly_temp==min(monthly_temp))]
