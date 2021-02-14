@@ -55,7 +55,7 @@ EYclm   <- dbatch2$eyear.clm
 cat("\n", paste("Scenario", ARG),
     "-------------------------------------------------------", sep = "\n")
 print(dbatch2)
-
+print(crops[CROPIDX])
 
 if (crops[CROPIDX]=="Winter_Wheat") {
   
