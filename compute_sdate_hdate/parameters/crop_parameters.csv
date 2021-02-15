@@ -1,0 +1,7 @@
+crop_id,crop_name,cft_id,cft_name,initdate.sdatenh,initdate.sdatesh,temp_fall,temp_spring,calcmethod_sdate,basetemp.low,temp_base_rphase,temp_opt_rphase,ppet_ratio,ppet_ratio_diff,ppet_min,rphase_duration,min_growingseason,max_growingseason_wt,max_growingseason_st,maxrp_growingseason,maturity_to_harvest,max_flowering_phase
+1,Maize,3,Maize,1,181,1000,14,STYP_CALC_SDATE,5,7,30,0.5,0.5,0.5,60,90,1000,180,120,21,7
+2,Rice,2,Rice,100,180,1000,18,STYP_CALC_SDATE,10,8,24,1,0.5,0.5,40,90,1000,180,120,7,7
+3,Sorghum,4,Tropical_cereals,80,260,1000,12,STYP_CALC_SDATE,10,8,25,0.5,0.5,0.5,40,90,1000,180,120,0,7
+4,Soybean,9,Oil_crops_soybean,140,320,1000,13,STYP_CALC_SDATE,10,6,23,0.5,0.5,0.5,40,90,1000,180,120,21,40
+5,Spring_Wheat,1,Temperate_cereals,1,181,12,5,STYP_CALC_SDATE,0,1,25,0.5,0.5,0.5,40,90,1000,180,120,7,7
+6,Winter_Wheat,1,Temperate_cereals,258,90,12,5,WTYP_CALC_SDATE,0,1,25,0.5,0.5,0.5,40,90,330,180,120,7,7

@@ -99,7 +99,7 @@ crop_parameters_all <- subset(crop_parameters_all, crop_name%in%crops)
 print(crop_parameters_all[,c("crop_id", "crop_name")])
 
 # Simulation settings
-dfbatch <- read.csv(simsetting.fn, header = TRUE, stringsAsFactors = FALSE)
+batch.df <- read.csv(simsetting.fn, header = TRUE, stringsAsFactors = FALSE)
 
 # Graphics ----
 cat("Importing graphics for plotting (labelling and color schemes) ...",

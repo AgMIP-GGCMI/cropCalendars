@@ -9,7 +9,7 @@
 # PREPARE MONTHLY CLIMATE #
 #-----------------------------------------------------------#
 # prepare climate data for sowing and harvest dates estimation
-# RUN TIME: 90 min (20 min for monthly stats only, which are done first)
+# RUN TIME: 20 min
 
 print(Sys.time())
 
@@ -37,6 +37,7 @@ print(args)
 
 # select variable, crop, model
 batch.df1 <- batch.df[args,]
+print(batch.df1)
 GCM  <- batch.df1$gcm
 SC   <- batch.df1$scenario
 SY   <- batch.df1$syear
@@ -82,7 +83,6 @@ vdate <- seq(from = strptime("1987-01-01 00:00:00",
              to = strptime("1987-12-31 00:00:00",
                            format = "%Y-%m-%d %H:%M:%S", tz = "CET"),
              by = "day")
-length(vdate)
 # vectors of time line in weather file 1
 vyear <- sprintf("%04d", as.numeric(strptime(vdate, "%Y-%m-%d %H:%M:%S")$year+1900 ))
 vmon  <- sprintf("%02d", as.numeric(strptime(vdate, "%Y-%m-%d %H:%M:%S")$mon+1 ))
