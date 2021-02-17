@@ -117,7 +117,7 @@ for (la in 1:length(lat)) {
 }
 
 # Save PET temporarily (takes some time to compute)
-save(pet, file = paste0(tmp.dir, "pet.Rdata"))
+save(pet, file = paste0(tmp.dir,"pet", "_",GCM,"_",SC,"_",SY,"_",EY,".Rdata"))
 
 
 # Compute Monthly Statistics ----
@@ -157,6 +157,8 @@ DTpr   <- array2dataTable(pr.mavg)
 DTpet  <- array2dataTable(pet.mavg)
 DTppet <- array2dataTable(ppet.mavg)
 
+rm(tas, pr, pet, tas.mavg, pr.mavg, pet.mavg, ppet.mavg)
+
 # Merge DTs ----
 # ------------------------------------------------------#
 DTclm1 <- merge(DTtas, DTpr, by = c("V1", "V2"), suffixes = c(".tas", ".pr"))
@@ -169,6 +171,7 @@ DTgrid <- data.table(lon = coord.df[,1], lat = coord.df[,2], pixelnr = 1:67420)
 
 DTout <- merge(DTgrid, DTclm3, by = c("pixelnr"))
 
+rm(DTtas, DTpr, DTpet, DTppet, DTclm1, DTclm2, DTclm3)
 
 # Save DTs ----
 # ------------------------------------------------------#
@@ -230,6 +233,6 @@ if (T) {
   dev.off()
 }
 
-if(save.tmp.file == F) file.remove(paste0(tmp.dir, "pet.Rdata"))
+if(save.tmp.file == F) file.remove(paste0(tmp.dir,"pet", "_",GCM,"_",SC,"_",SY,"_",EY,".Rdata"))
 
  cat("\n--------\nDone !\n--------\n")

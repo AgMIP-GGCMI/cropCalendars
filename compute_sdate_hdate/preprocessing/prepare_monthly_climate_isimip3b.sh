@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH --time=01:00:00
-#SBATCH --cpus-per-task=4 #request 16GB
+#SBATCH --cpus-per-task=8 #request 32GB
 #SBATCH --job-name=mclm
 #SBATCH --account=macmit
 #SBATCH --mail-user=minoli@pik-potsdam.de
@@ -9,7 +9,7 @@
 #SBATCH --output=out_err/mclm_%j_%a.out
 #SBATCH --error=out_err/mclm_%j_%a.err
 
-#SBATCH --array=1-2
+#SBATCH --array=1-5%2
 
 module load piam
 
