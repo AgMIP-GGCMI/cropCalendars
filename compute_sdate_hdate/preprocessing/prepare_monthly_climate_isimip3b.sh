@@ -9,7 +9,7 @@
 #SBATCH --output=out_err/mclm_%j_%a.out
 #SBATCH --error=out_err/mclm_%j_%a.err
 
-#SBATCH --array=1-5%2
+#SBATCH --array=1-10
 
 module load piam
 
