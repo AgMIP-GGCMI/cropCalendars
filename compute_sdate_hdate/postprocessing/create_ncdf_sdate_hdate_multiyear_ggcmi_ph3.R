@@ -12,6 +12,7 @@
 # ------------------------------------------------------#
 
 rm(list=ls(all=T))
+stime <- Sys.time()
 
 # ----
 
@@ -38,9 +39,9 @@ ncdir <- paste0(project.dir, "crop_calendars/ncdf/")
 
 # Crop Names: ----
 # rb_cal = rule-based calendar, ggcmi = ggcmi ph3
-crop.ls <- list(all_low = c("maize", "rice", "sorghum", "spring_wheat", "winter_wheat"),
-                rb_cal  = c("Maize", "Rice", "Sorghum", "Spring_Wheat", "Winter_Wheat"),
-                ggcmi   = c("mai", "ric", "sor", "swh", "wwh"))
+crop.ls <- list(all_low = c("maize", "rice", "sorghum", "soybean", "spring_wheat", "winter_wheat"),
+                rb_cal  = c("Maize", "Rice", "Sorghum", "Soybean", "Spring_Wheat", "Winter_Wheat"),
+                ggcmi   = c("mai", "ric", "sor", "soy", "swh", "wwh"))
 irri.ls <- list(all_low = c("rainfed", "irrigated"),
                 rb_cal  = c("Rainfed", "Irrigated"),
                 ggcmi   = c("rf", "ir"))
@@ -170,5 +171,8 @@ for (ir in 1:2) { # irrigation index
   
 } # ir
 
+etime <- Sys.time()
+cat("Run time:\n--------\n")
+print(etime-stime)
 
 cat("\n------\nDone !\n------\n")
