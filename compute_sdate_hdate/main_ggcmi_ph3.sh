@@ -8,8 +8,8 @@ wd="/home/minoli/crop_calendars_gitlab/ggcmi_ph3/compute_sdate_hdate"
 
 # export I_MPI_PMI_LIBRARY=/p/system/slurm/lib/libpmi.so
 
-for scenario in `seq 1 2`; do
-  for crop in `seq 1 2`; do
+for scenario in `seq 1 10`; do
+  for crop in `seq 1 6`; do
 
     echo "SCENARIO: $scenario --- CROPS: $crop"
 
