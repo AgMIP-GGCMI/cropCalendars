@@ -31,19 +31,43 @@ save.tmp.file <- FALSE # If T, do not delete tmp PET file (for testing only)
 # Import Job Arguments ----
 # ------------------------------------------------------#
 options(echo=FALSE) # if want see commands in output file
-args <- as.numeric(commandArgs(trailingOnly = TRUE)[1])
+args <- commandArgs(trailingOnly = TRUE)
 print(args)
 # args <- 1
 
 # select variable, crop, model
-batch.df1 <- batch.df[args,]
-print(batch.df1)
-GCM  <- batch.df1$gcm
-SC   <- batch.df1$scenario
-SY   <- batch.df1$syear
-EY   <- batch.df1$eyear
-FY   <- batch.df1$fyear
-LY   <- batch.df1$lyear
+GCM  <- args[1]
+SC   <- args[2]
+SY   <- as.numeric(args[3])
+EY   <- as.numeric(args[4])
+# batch.df1 <- batch.df[args,]
+# print(batch.df1)
+# GCM  <- batch.df1$gcm
+# SC   <- batch.df1$scenario
+# SY   <- batch.df1$syear
+# EY   <- batch.df1$eyear
+# FY1   <- batch.df1$fyear
+# LY1   <- batch.df1$lyear
+
+# If no overlap historical / future, read only one file
+# If overlap historical / future need to read two files
+if (EY <= 2014) {
+  FY1 <- 1850
+  LY1 <- 2014
+  SC  <- "historical"
+} else if (EY > 2014 & SY <= 2014) {
+  FY1 <- 1850
+  LY1 <- 2014
+  SC1 <- "historical"
+  FY2 <- 2014
+  LY2 <- 2100
+  SC2 <- SC
+} else {
+  FY1 <- 2014
+  LY1 <- 2100
+}
+
+
 
 years  <- c(SY:EY)
 nyears <- length(years)
@@ -93,18 +117,57 @@ vyear.mon.day <- paste0(vyear, vmon, vday)
 
 # Read Climate Data ----
 # ------------------------------------------------------#
-# Climate file names
-tas_fn <- paste.ismip3b.clm.fn(isimip3b.path, GCM, SC, "tas", FY, LY)
-pr_fn  <- paste.ismip3b.clm.fn(isimip3b.path, GCM, SC, "pr",  FY, LY)
+# If no overlap historical / future, read only one file
+# If overlap historical / future need to read two files
+if (EY > 2014 & SY <= 2014) {
+  
+  # Climate file names
+  tas_fn1 <- paste.ismip3b.clm.fn(isimip3b.path, GCM, SC1, "tas", FY1, LY1)
+  pr_fn1  <- paste.ismip3b.clm.fn(isimip3b.path, GCM, SC1, "pr",  FY1, LY1)
+  tas_fn2 <- paste.ismip3b.clm.fn(isimip3b.path, GCM, SC2, "tas", FY2, LY2)
+  pr_fn2  <- paste.ismip3b.clm.fn(isimip3b.path, GCM, SC2, "pr",  FY2, LY2)
+  
+  # Tas and Pr ----
+  # Read 20-years daily climate from .clm files
+  tas1 <- read.climate.input(tas_fn1, ncells = NCELLS, ryear = FY1,
+                            fyear = SY, lyear = 2014, header = 43,
+                            nbands = 365, dtype = "integer", scalar = 0.1)
+  pr1  <- read.climate.input(pr_fn1,  ncells = NCELLS, ryear = FY1,
+                            fyear = SY, lyear = 2014, header = 43,
+                            nbands = 365, dtype = "integer", scalar = 0.1)
+  # Read 20-years daily climate from .clm files
+  tas2 <- read.climate.input(tas_fn2, ncells = NCELLS, ryear = FY2,
+                             fyear = 2015, lyear = EY, header = 43,
+                             nbands = 365, dtype = "integer", scalar = 0.1)
+  pr2  <- read.climate.input(pr_fn2,  ncells = NCELLS, ryear = FY2,
+                             fyear = 2015, lyear = EY, header = 43,
+                             nbands = 365, dtype = "integer", scalar = 0.1)
+  
+  # Collate period 1 and 2 in one array
+  tas <- pr <- array(NA, dim = c(NCELLS, 365, nyears))
+  tas[1:NCELLS, 1:365, 1:dim(tas1)[3]] <- tas1
+  pr[ 1:NCELLS, 1:365, 1:dim(pr1 )[3]] <- pr1
+  tas[1:NCELLS, 1:365, (dim(tas1)[3]+1):(dim(tas)[3])] <- tas2
+  pr[ 1:NCELLS, 1:365, (dim(pr1 )[3]+1):(dim(pr )[3])] <- pr2
+  rm(tas1, pr1, tas2, pr2)
+  
+} else {
+  
+  # Climate file names
+  tas_fn <- paste.ismip3b.clm.fn(isimip3b.path, GCM, SC, "tas", FY, LY)
+  pr_fn  <- paste.ismip3b.clm.fn(isimip3b.path, GCM, SC, "pr",  FY, LY)
+  
+  # Tas and Pr ----
+  # Read 20-years daily climate from .clm files
+  tas <- read.climate.input(tas_fn, ncells = NCELLS, ryear = FY,
+                            fyear = SY, lyear = EY, header = 43,
+                            nbands = 365, dtype = "integer", scalar = 0.1)
+  pr  <- read.climate.input(pr_fn,  ncells = NCELLS, ryear = FY,
+                            fyear = SY, lyear = EY, header = 43,
+                            nbands = 365, dtype = "integer", scalar = 0.1)
+}
 
-# Tas and Pr ----
-# Read 20-years daily climate from .clm files
-tas <- read.climate.input(tas_fn, ncells = NCELLS, ryear = FY,
-                          fyear = SY, lyear = EY, header = 43,
-                          nbands = 365, dtype = "integer", scalar = 0.1)
-pr  <- read.climate.input(pr_fn,  ncells = NCELLS, ryear = FY,
-                          fyear = SY, lyear = EY, header = 43,
-                          nbands = 365, dtype = "integer", scalar = 0.1)
+
 
 # Compute PET (Potential ET) ----
 cat("Computing daily PET...\n")
