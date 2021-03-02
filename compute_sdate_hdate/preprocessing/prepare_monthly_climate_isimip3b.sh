@@ -1,18 +1,23 @@
 #!/bin/bash
 
-#SBATCH --time=01:00:00
-#SBATCH --cpus-per-task=8 #request 32GB
-#SBATCH --job-name=mclm
-#SBATCH --account=macmit
-#SBATCH --mail-user=minoli@pik-potsdam.de
-#SBATCH --workdir=/home/minoli/crop_calendars_gitlab/ggcmi_ph3/compute_sdate_hdate
-#SBATCH --output=out_err/mclm_%j_%a.out
-#SBATCH --error=out_err/mclm_%j_%a.err
-
-#SBATCH --array=1-10
-
 module load piam
 
-echo "SLURM_ARRAY_TASK_ID: " $SLURM_ARRAY_TASK_ID
+gcms=('UKESM1-0-LL')
+scens=('ssp585')
+syears=('1995' '2001' '2011' '2021' '2031' '2041' '2051' '2061' '2071' '2081')
+eyears=('2014' '2020' '2030' '2040' '2050' '2060' '2070' '2080' '2090' '2100')
 
-R -f ./preprocessing/prepare_monthly_climate_isimip3b.R --args $SLURM_ARRAY_TASK_ID
+
+wd=/home/minoli/crop_calendars_gitlab/ggcmi_ph3/compute_sdate_hdate
+
+for gc in "${!gcms[@]}";do
+  for sc in "${!scens[@]}";do
+    for yy in "${!syears[@]}";do
+
+        echo "GCM: ${gcms[gc]} --- SCENARIO: ${scens[sc]} --- YEAR: ${syears[yy]}"
+
+        sbatch --qos=standby --ntasks=1 --cpus-per-task=8 -t 01:00:00 -J mclm -A macmit --workdir=${wd} -e out_err/mclm.%j.err -o out_err/mclm.%j.out R --file=preprocessing/prepare_monthly_climate_isimip3b.R --args "${gcms[gc]}" "${scens[sc]}" "${syears[yy]}" "${eyears[yy]}"
+
+    done
+  done
+done

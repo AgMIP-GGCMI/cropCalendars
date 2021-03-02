@@ -119,7 +119,7 @@ vyear.mon.day <- paste0(vyear, vmon, vday)
 # ------------------------------------------------------#
 # If no overlap historical / future, read only one file
 # If overlap historical / future need to read two files
-if (EY > 2014 & SY <= 2014) {
+if (SY <= 2014 & EY > 2014) {
   
   # Climate file names
   tas_fn1 <- paste.ismip3b.clm.fn(isimip3b.path, GCM, SC1, "tas", FY1, LY1)
@@ -154,15 +154,15 @@ if (EY > 2014 & SY <= 2014) {
 } else {
   
   # Climate file names
-  tas_fn <- paste.ismip3b.clm.fn(isimip3b.path, GCM, SC, "tas", FY, LY)
-  pr_fn  <- paste.ismip3b.clm.fn(isimip3b.path, GCM, SC, "pr",  FY, LY)
+  tas_fn <- paste.ismip3b.clm.fn(isimip3b.path, GCM, SC, "tas", FY1, LY1)
+  pr_fn  <- paste.ismip3b.clm.fn(isimip3b.path, GCM, SC, "pr",  FY1, LY1)
   
   # Tas and Pr ----
   # Read 20-years daily climate from .clm files
-  tas <- read.climate.input(tas_fn, ncells = NCELLS, ryear = FY,
+  tas <- read.climate.input(tas_fn, ncells = NCELLS, ryear = FY1,
                             fyear = SY, lyear = EY, header = 43,
                             nbands = 365, dtype = "integer", scalar = 0.1)
-  pr  <- read.climate.input(pr_fn,  ncells = NCELLS, ryear = FY,
+  pr  <- read.climate.input(pr_fn,  ncells = NCELLS, ryear = FY1,
                             fyear = SY, lyear = EY, header = 43,
                             nbands = 365, dtype = "integer", scalar = 0.1)
 }

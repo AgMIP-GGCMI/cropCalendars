@@ -56,30 +56,37 @@ source(paste0(working.dir, "src/ggplot.map.general.R"))
 if(oncluster==TRUE) {
 # import argument from bash script
 options(echo=FALSE) # if you want see commands in output file
-args <- as.numeric(commandArgs(trailingOnly = TRUE))
+args <- commandArgs(trailingOnly = TRUE)
 } else {
   args <- c(2,1)
 }
 print(args)
 
-arg1 <- args[1]
-arg2 <- args[2]
+# select variable, crop, model
+GCM  <- args[1]
+SC   <- args[2]
+SY   <- as.numeric(args[3])
+EY   <- as.numeric(args[4])
+CROP <- args[5]
+
+# arg1 <- args[1]
+# arg2 <- args[2]
 
 # args <- seq(1, 72, 12)[6]
 
 # select variable, crop, model
-batch.df1 <- batch.df[arg1,]
-print(batch.df1)
-GCM  <- batch.df1$gcm
-SC   <- batch.df1$scenario
-SY   <- batch.df1$syear
-EY   <- batch.df1$eyear
-FY   <- batch.df1$fyear
-LY   <- batch.df1$lyear
+# batch.df1 <- batch.df[arg1,]
+# print(batch.df1)
+# GCM  <- batch.df1$gcm
+# SC   <- batch.df1$scenario
+# SY   <- batch.df1$syear
+# EY   <- batch.df1$eyear
+# FY   <- batch.df1$fyear
+# LY   <- batch.df1$lyear
 
-cat("\n", paste("Scenario", arg1),
-    "-------------------------------------------------------", sep = "\n")
-print(batch.df1)
+# cat("\n", paste("Scenario", arg1),
+#     "-------------------------------------------------------", sep = "\n")
+# print(batch.df1)
 
 
 # IMPORT CLIMATE DATA ----
@@ -147,7 +154,7 @@ mainfunction <- function(coord, dtclm, dfgrid, crop_parameters) {
 
 # LOOP CROPS ----
 #___________________________________________________________#
-CROP <- crops[arg2]
+# CROP <- crops[arg2]
 
 cat("\n", paste("Start computing crop calendar for", CROP, "..."),
            "-------------------------------------------------------", sep = "\n")
@@ -165,8 +172,8 @@ print(t(crop_pars))
   # COORD <- 47992
 
 # Initialize log file to monitor parallel foreach loop
-#logfile <- paste0(working.dir, "out_err/",CROP,"_",GCM,"_",SC,"_",SY,"_",EY, "_log.txt")
-logfile <- paste0(working.dir, "out_err/", arg1, "_", arg2, "_log.txt")
+logfile <- paste0(working.dir, "out_err/",CROP,"_",GCM,"_",SC,"_",SY,"_",EY, "_log.txt")
+# logfile <- paste0(working.dir, "out_err/", arg1, "_", arg2, "_log.txt")
 cat("Monitoring foreach iterations:", "\n", file=logfile, append=F)
 
 if (parallel==TRUE) {   # Parallel Mode
