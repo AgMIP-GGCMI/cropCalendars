@@ -61,6 +61,9 @@ SC   <- args[3]
 
 SYs <- c(2005, 2015, seq(2021, 2091, by = 10))    # Start of the period
 EYs <- c(2014, 2020, seq(2030, 2100, by = 10))    # End of the period
+FYs <- c(1995, 2001, seq(2011, 2081, by = 10))    # First year DT file    
+LYs <- c(2014, 2020, seq(2030, 2100, by = 10))    # Last year DT file
+
 # MYs <- SYs+(EYs-SYs+1)/2                          # Mid of the period
 # LYs <- length(SYs:EYs)                            # Length of the time period
 HYs <- c("historical", rep(SC, length(SYs)-1))    # historical/ssp years
@@ -90,7 +93,7 @@ for (ir in 1:2) { # irrigation index
   cat("Doing", irri.ls[["rb_cal"]][ir], "\n----------------\n")
   
   # Initialize arrays for each variable
-  ARsd <- ARhd <- ARgp <- AR
+  ARsd <- ARhd <- ARgp <- ARst <- ARhr <- ARss <- AR
   
   for (tt in 1:length(SYs)) { # time-slice index
     
@@ -99,7 +102,7 @@ for (ir in 1:2) { # irrigation index
     
     # Crop calendar DT.Rdata file
     fname <- paste0(output.dir, "DT_output_crop_calendars_", CROP, "_", GCM,
-                    "_", HYs[tt], "_", SYs[tt], "_", EYs[tt], ".Rdata")
+                    "_", HYs[tt], "_", FYs[tt], "_", LYs[tt], ".Rdata")
     DT <- get(load(fname))[irrigation==irri.ls[["rb_cal"]][ir]] # subset irrig
     print(dim(DT))
     
@@ -117,6 +120,9 @@ for (ir in 1:2) { # irrigation index
         ARsd[ilon, ilat, j] <- DT$sowing_doy[i]
         ARhd[ilon, ilat, j] <- DT$maturity_doy[i]
         ARgp[ilon, ilat, j] <- DT$growing_period[i]
+        ARst[ilon, ilat, j] <- DT$seasonality_type[i]
+        ARhr[ilon, ilat, j] <- DT$harvest_reason[i]
+        ARss[ilon, ilat, j] <- DT$sowing_season[i]
         
       } # j
       
@@ -147,13 +153,30 @@ for (ir in 1:2) { # irrigation index
   growp_def <- ncvar_def(name="grow-period", units="days", dim=nc_dimension,
                          longname = "Rule-based growing period duration",
                          prec="single", compression = 6)
+  seast_def <- ncvar_def(name="seasonality", units="-", dim=nc_dimension,
+                         longname = paste("Climate seasonality type,
+                                          (1=No Seas; 2=Prec; 3=PrecTemp;",
+                                          "4=Temp; 5=TempPrec)"),
+                         prec="single", compression = 6)
+  harvr_def <- ncvar_def(name="harv-reason", units="-", dim=nc_dimension,
+                         longname = paste("Rule triggering harvest",
+                                          "(1=GPmin; 2=GPmed; 3=GPmax; 4=Wstress;",
+                                          "5=Topt, 6=Thigh)"),
+                         prec="single", compression = 6)
+  sowse_def <- ncvar_def(name="plant-season", units="days", dim=nc_dimension,
+                         longname = "Sowing season (Spring / Winter)",
+                         prec="single", compression = 6)
   # Create netCDF file and put arrays
-  ncout <- nc_create(ncfname, list(sdate_def, hdate_def, growp_def), verbose = F)
+  ncout <- nc_create(ncfname, list(sdate_def, hdate_def, growp_def,
+                                   seast_def, harvr_def, sowse_def),verbose = F)
   
   # Put variables
   ncvar_put(ncout, sdate_def, ARsd)
   ncvar_put(ncout, hdate_def, ARhd)
   ncvar_put(ncout, growp_def, ARgp)
+  ncvar_put(ncout, seast_def, ARst)
+  ncvar_put(ncout, harvr_def, ARhr)
+  ncvar_put(ncout, sowse_def, ARss)
   
   # Put additional attributes into dimension and data variables
   ncatt_put(ncout,"lon","axis","X") #,verbose=FALSE) #,definemode=FALSE)
