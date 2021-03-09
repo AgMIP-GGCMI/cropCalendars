@@ -69,6 +69,10 @@ SY   <- as.numeric(args[3])
 EY   <- as.numeric(args[4])
 CROP <- args[5]
 
+# If no overlap historical / future, read only one file
+# If overlap historical / future need to read two files
+SC <- ifelse(EY <= 2014, "historical", SC)
+
 # IMPORT CLIMATE DATA ----
 #___________________________________________________________#
 # get monthly climate data

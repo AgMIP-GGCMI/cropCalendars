@@ -37,6 +37,8 @@ source(paste0(working.dir, "postprocessing/ncdfs.R"))
 dtdir <- paste0(project.dir, "crop_calendars/DT/")
 ncdir <- paste0(project.dir, "crop_calendars/ncdf/")
 
+if (!dir.exists(ncdir)) dir.create(ncdir, recursive = T)
+
 # Crop Names: ----
 # rb_cal = rule-based calendar, ggcmi = ggcmi ph3
 crop.ls <- list(all_low = c("maize", "rice", "sorghum", "soybean", "spring_wheat", "winter_wheat"),
