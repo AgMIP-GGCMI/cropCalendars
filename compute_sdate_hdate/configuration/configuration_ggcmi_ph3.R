@@ -27,11 +27,17 @@ library(scales) # adds some functionalities to ggplot2 plot scales
 
 # PATHS ----
 working.dir <- "/home/minoli/crop_calendars_gitlab/ggcmi_ph3/compute_sdate_hdate/"
-project.dir <- "/p/projects/macmit/users/minoli/PROJECTS/GGCMI_ph3/"
+project.dir <- "/p/projects/macmit/users/minoli/PROJECTS/GGCMI_ph3_adaptation/"
 climate.dir <- paste0(project.dir, "monthly_climate/")
 input.dir   <- paste0(project.dir, "inputs/")
 output.dir  <- paste0(project.dir, "crop_calendars/DT/")
 figure.dir  <- paste0(project.dir, "crop_calendars/DT/")
+
+cat("\nCreating directories if needed ...\n")
+if (!dir.exists(climate.dir)) dir.create(climate.dir, recursive = T)
+if (!dir.exists(input.dir))   dir.create(input.dir,   recursive = T)
+if (!dir.exists(output.dir))  dir.create(output.dir,  recursive = T)
+if (!dir.exists(figure.dir))  dir.create(figure.dir,  recursive = T)
 
 # Grid file ----
 grid.fn <- paste0("/p/projects/lpjml/input/ISIMIP3/grid.bin")
@@ -40,8 +46,8 @@ NCELLS <- 67420
 # Parameters file ----
 croppar.fn <- paste0(working.dir,"parameters/","crop_parameters.csv")
 
-# Simulation climate settings file ----
-simsetting.fn <- paste0(working.dir,"configuration/","scenarios_ggcmi_ph3.csv")
+## Simulation climate settings file ----
+# simsetting.fn <- paste0(working.dir,"configuration/","scenarios_ggcmi_ph3.csv")
 
 # Crops
 crops <- c("Maize","Rice","Sorghum","Soybean","Spring_Wheat","Winter_Wheat")
@@ -98,8 +104,8 @@ crop_parameters_all <- read.csv(croppar.fn, header = T, stringsAsFactors = F)
 crop_parameters_all <- subset(crop_parameters_all, crop_name%in%crops)
 print(crop_parameters_all[,c("crop_id", "crop_name")])
 
-# Simulation settings
-batch.df <- read.csv(simsetting.fn, header = TRUE, stringsAsFactors = FALSE)
+# # Simulation settings
+# batch.df <- read.csv(simsetting.fn, header = TRUE, stringsAsFactors = FALSE)
 
 # Graphics ----
 cat("Importing graphics for plotting (labelling and color schemes) ...",

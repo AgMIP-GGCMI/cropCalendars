@@ -439,10 +439,10 @@ calcHarvestDate <- function(croppar,
   hd_rf <- ifelse(hd_rf > NDAYYEAR, hd_rf-NDAYYEAR, hd_rf)
   hd_ir <- ifelse(hd_ir > NDAYYEAR, hd_ir-NDAYYEAR, hd_ir)
   
-  hd <- list("hd_rf" = hd_rf,
-             "hd_ir" = hd_ir,
-             "harvest_reason_rf" = harvest_reason_rf,
-             "harvest_reason_ir" = harvest_reason_ir)
+  hd <- list("hd_rf" = hd_rf[1],
+             "hd_ir" = hd_ir[1],
+             "harvest_reason_rf" = harvest_reason_rf[1],
+             "harvest_reason_ir" = harvest_reason_ir[1])
   return(hd)
   
 }

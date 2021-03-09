@@ -59,14 +59,13 @@ CROP <- args[1]
 GCM  <- args[2]
 SC   <- args[3]
 
-SYs <- c(2005, 2015, seq(2021, 2091, by = 10))    # Start of the period
-EYs <- c(2014, 2020, seq(2030, 2100, by = 10))    # End of the period
-FYs <- c(1995, 2001, seq(2011, 2081, by = 10))    # First year DT file    
-LYs <- c(2014, 2020, seq(2030, 2100, by = 10))    # Last year DT file
+SYs <- seq(1981, 2091, by = 10) # Start of the period
+EYs <- seq(1990, 2100, by = 10) # End of the period
+FYs <- seq(1961, 2071, by = 10) # First year DT file
+LYs <- seq(1990, 2100, by = 10)# Last year DT file
 
-# MYs <- SYs+(EYs-SYs+1)/2                          # Mid of the period
-# LYs <- length(SYs:EYs)                            # Length of the time period
-HYs <- c("historical", rep(SC, length(SYs)-1))    # historical/ssp years
+nhist <- length(EYs[EYs<2015]) # number of historical time slices
+HYs <- c(rep("historical", nhist), rep(SC, length(SYs)-nhist))    # historical/ssp years
 
 print(SYs); print(EYs)
 

@@ -26,6 +26,8 @@ source(paste0(working.dir, "configuration/configuration_ggcmi_ph3.R"))
 isimip3b.path  <- "/p/projects/lpjml/input/scenarios/ISIMIP3b/" # .clm climate
 tmp.dir  <- paste0(climate.dir, "tmp/")
 plot.dir <- paste0(climate.dir, "plots/")
+if (!dir.exists(tmp.dir))  dir.create(tmp.dir, recursive = T)
+if (!dir.exists(plot.dir)) dir.create(plot.dir, recursive = T)
 save.tmp.file <- FALSE # If T, do not delete tmp PET file (for testing only)
 
 # Import Job Arguments ----
@@ -33,21 +35,12 @@ save.tmp.file <- FALSE # If T, do not delete tmp PET file (for testing only)
 options(echo=FALSE) # if want see commands in output file
 args <- commandArgs(trailingOnly = TRUE)
 print(args)
-# args <- 1
 
 # select variable, crop, model
 GCM  <- args[1]
 SC   <- args[2]
 SY   <- as.numeric(args[3])
 EY   <- as.numeric(args[4])
-# batch.df1 <- batch.df[args,]
-# print(batch.df1)
-# GCM  <- batch.df1$gcm
-# SC   <- batch.df1$scenario
-# SY   <- batch.df1$syear
-# EY   <- batch.df1$eyear
-# FY1   <- batch.df1$fyear
-# LY1   <- batch.df1$lyear
 
 # If no overlap historical / future, read only one file
 # If overlap historical / future need to read two files
@@ -66,7 +59,6 @@ if (EY <= 2014) {
   FY1 <- 2014
   LY1 <- 2100
 }
-
 
 
 years  <- c(SY:EY)
@@ -243,18 +235,6 @@ save(DTout, file = paste0(climate.dir, "DT_average_monthly_climate_", GCM, "_", 
 
 # Plot Maps ----
 # ------------------------------------------------------#
-
-# args <- 1
-# 
-# # select variable, crop, model
-# batch.df1 <- batch.df[args,]
-# GCM  <- batch.df1$gcm
-# SC   <- batch.df1$scenario
-# SY   <- batch.df1$syear
-# EY   <- batch.df1$eyear
-# FY   <- batch.df1$fyear
-# LY   <- batch.df1$lyear
-
 if (T) {
   cat("Plotting monthly climate...\n")
   DTclm <- get(load(file = paste0(climate.dir, "DT_average_monthly_climate_", GCM, "_", SC, "_", SY, "_", EY, ".Rdata")))
