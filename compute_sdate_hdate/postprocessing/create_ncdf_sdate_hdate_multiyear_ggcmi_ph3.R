@@ -98,7 +98,7 @@ for (ir in 1:2) { # irrigation index
   # Initialize arrays for each variable
   ARsd <- ARhd <- ARst <- ARhr <- ARss <- AR # ARgp
   ARsd.r <- ARhd.r <- ARsd.m <- ARhd.m <- AR # s/hdate replacing and marking
-  ARsd.a <- AR # rolling average
+  ARsd.a <- ARhd.a <- AR # rolling average
   
   for (tt in 1:length(SYs)) { # time-slice index
     
@@ -152,7 +152,7 @@ for (ir in 1:2) { # irrigation index
                     ARsd.r[ilon, ilat,t3:t4])
       ARsd.a[ilon, ilat,] <- rollmean(ARsd.tmp, k = 10)
       # concatenate first and last values, as rolling average trims edges
-      ARsd.tmp <- c(ARhd.r[ilon, ilat,t1:t2],
+      ARhd.tmp <- c(ARhd.r[ilon, ilat,t1:t2],
                     ARhd.r[ilon, ilat,],
                     ARhd.r[ilon, ilat,t3:t4])
       ARhd.a[ilon, ilat,] <- rollmean(ARhd.tmp, k = 10)
