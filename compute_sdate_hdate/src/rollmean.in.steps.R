@@ -1,5 +1,5 @@
-# Apply stepwise rolling mean on vec.date, within steps defined by vec.class
-# 
+# Apply step-wise rolling mean on vec.date, within windows defined by vec.class
+
 rollmean.in.steps <- function(vec.class, vec.date, kk = 10, marking = F) {
   
   # vec.class: vector of seasonality or harvest reason
@@ -7,10 +7,10 @@ rollmean.in.steps <- function(vec.class, vec.date, kk = 10, marking = F) {
   # kk: years for rollmean (k parameter)
   
   require(zoo) # for rolling mean
-
+  
   vec.date.out <- vec.date
   mark.replaced <- vec.date; mark.replaced[] <- 0L
- 
+  
   # indices of start, end and change in vec.class
   x  <- c(1, which(diff(vec.class)!=0)+1, length(vec.class)+1 )
   
@@ -18,22 +18,13 @@ rollmean.in.steps <- function(vec.class, vec.date, kk = 10, marking = F) {
     # i <- 1
     
     iyears <- x[i]:(x[i+1]-1) # indices of years to roll-average
-    # eyears <- ifelse(kk%%2==1, round((kk/2)+1), round((kk/2)-1)) # if kk is odd
-    # 
-    # t1 <- 1
-    # t2 <- length(iyears)
     
-    # concatenate first and last values, as rolling average trims edges
-    # vec.date.tmp <- c(rep(vec.date[t1], eyears),
-    #                   vec.date[iyears],
-    #                   rep(vec.date[t2], eyears))
-    #vec.date.out[iyears] <- round(rollmean(vec.date.tmp, k = kk))
     vec.date.out[iyears] <- round(rollapply(vec.date[iyears], width = kk,
                                             FUN = mean, partial = T))
     mark.replaced[iyears] <- i
     
   } # i
-
+  
   if (!marking) return(vec.date.out) else return(mark.replaced)
 }
 
