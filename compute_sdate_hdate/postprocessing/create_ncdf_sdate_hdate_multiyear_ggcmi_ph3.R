@@ -158,14 +158,15 @@ print(Sys.time()-stime)
 # Initialize arrays for each variable
 # --------------------------#
 ARsd.r <- ARhd.r <- ARsd.m <- ARhd.m <- AR # s/hdate replacing and marking
-ARst.r <- ARhr.r <- AR                     # seasonality/harv.reas. replacing
+#ARst.r <- ARhr.r <- AR                     # seasonality/harv.reas. replacing
 ARsd.a <- ARhd.a <- AR                     # rolling average
+ARsd.a.m <- ARhd.a.m <- AR
 
 count <- 0                                 # for plotting only some pixels
 
 for (i in 1:nrow(DT)) {
-  # for (i in 1:1000) { 
-  if(i%%1e3==0) cat(i, "\t") else cat(".")
+  #for (i in 1:1000) { 
+  if(i%%1e3==0) cat(i, "\t") #else cat(".")
   
   ilat <- which(lats==DT$lat[i])
   ilon <- which(lons==DT$lon[i])
@@ -174,123 +175,128 @@ for (i in 1:nrow(DT)) {
   # ------------------------------------------------------#
   
   # Check for temporary changes in Seasonality Type, replace and mark
-  ARsd.r[ilon, ilat,] <- replace.jumps(ARst[ilon, ilat,], ARsd[ilon, ilat,])
-  ARst.r[ilon, ilat,] <- replace.jumps(ARst[ilon, ilat,], ARst[ilon, ilat,],
-                                       replacing.value = "previous")
-  ARsd.m[ilon, ilat,] <- replace.jumps(ARst[ilon, ilat,], ARsd[ilon, ilat,],
-                                       marking = T, mark.value = 1L)
+  sd.r <- replace.jumps(ARst[ilon, ilat,], ARsd[ilon, ilat,]) # sdate repl.
+  st.r <- replace.jumps(ARst[ilon, ilat,], ARst[ilon, ilat,], # season repl.
+                        replacing.value = "previous")
+  sd.m <- replace.jumps(ARst[ilon, ilat,], ARsd[ilon, ilat,], # sdate mark
+                        marking = T, mark.value = 1L)
   
   # Check for temporary changes in Harvest Reason, replace and mark
-  ARhd.r[ilon, ilat,] <- replace.jumps(ARhr[ilon, ilat,], ARhd[ilon, ilat,])
-  ARhr.r[ilon, ilat,] <- replace.jumps(ARhr[ilon, ilat,], ARhr[ilon, ilat,],
-                                       replacing.value = "next")
-  ARhd.m[ilon, ilat,] <- replace.jumps(ARhr[ilon, ilat,], ARhd[ilon, ilat,],
-                                       marking = T, mark.value = 1L)
+  hd.r <- replace.jumps(ARhr[ilon, ilat,], ARhd[ilon, ilat,]) # hdate repl.
+  hr.r <- replace.jumps(ARhr[ilon, ilat,], ARhr[ilon, ilat,], # h.reas. repl
+                        replacing.value = "previous")
+  hd.m <- replace.jumps(ARhr[ilon, ilat,], ARhd[ilon, ilat,], # hdate mark
+                        marking = T, mark.value = 1L)
   
   # --------------------------#
   
-  ARsd.r2 <- ARsd.r; ARhd.r2 <- ARhd.r; ARsd.m2 <- ARsd.m; ARhd.m2 <- ARhd.m
+  sd.r2 <- sd.r; hd.r2 <- hd.r;
+  sd.m2 <- sd.m; hd.m2 <- hd.m
   
   # Replace default dates with GGCMI phase3 dates
-  ARsd.r2[ilon, ilat, which(ARdd[ilon, ilat,]==0)] <- sdggcmi[ilon, ilat]
-  ARhd.r2[ilon, ilat, which(ARdd[ilon, ilat,]==0)] <- hdggcmi[ilon, ilat]
+  sd.r2[which(ARdd[ilon, ilat,]==0)] <- sdggcmi[ilon, ilat]
+  hd.r2[which(ARdd[ilon, ilat,]==0)] <- hdggcmi[ilon, ilat]
   
   # --------------------------#
-  
-  ARsd.r3 <- ARsd.r2; ARhd.r3 <- ARhd.r2; ARsd.m3 <- ARsd.m2; ARhd.m3 <- ARhd.m2
   
   # Check for temporary Default Sdate, replace sdate and mark
-  ARsd.r3[ilon, ilat,] <- replace.jumps(ARdd[ilon, ilat,], ARsd.r2[ilon, ilat,])
-  ARsd.m3[ilon, ilat,] <- replace.jumps(ARdd[ilon, ilat,], ARsd.r2[ilon, ilat,],
-                                        marking = T, mark.value = 2L)
+  sd.r3 <- replace.jumps(ARdd[ilon, ilat,], sd.r2)
+  sd.m3 <- replace.jumps(ARdd[ilon, ilat,], sd.r2,
+                         marking = T, mark.value = 2L)
   
   # Check for temporary Default Sdate, replace hdate and mark
-  ARhd.r3[ilon, ilat,] <- replace.jumps(ARdd[ilon, ilat,], ARhd.r2[ilon, ilat,])
-  ARhd.m3[ilon, ilat,] <- replace.jumps(ARdd[ilon, ilat,], ARhd.r2[ilon, ilat,],
-                                        marking = T, mark.value = 2L)
+  hd.r3 <- replace.jumps(ARdd[ilon, ilat,], hd.r2)
+  hd.m3 <- replace.jumps(ARdd[ilon, ilat,], hd.r2,
+                         marking = T, mark.value = 2L)
   
   # --------------------------#
-  
-  ARsd.m4 <- ARsd.m3; ARhd.m4 <- ARhd.m3
   
   # Add Seasonality type and Default date vector to identify all jumps to be
   #  considered as windows for rolling mean
-  ARsd.m4[ilon, ilat,] <- ARst.r[ilon, ilat,] + ARdd[ilon, ilat,]
-  ARhd.m4[ilon, ilat,] <- ARhr.r[ilon, ilat,] + ARdd[ilon, ilat,]
-  
+  sd.m4 <- st.r + ARdd[ilon, ilat,]
+  hd.m4 <- hr.r + ARdd[ilon, ilat,]
+
   
   # Interpolated sdate: ----
   # ------------------------------------------------------#
-  ARsd.a.m <- ARhd.a.m <- AR
-  
+
   # Compute annual sdate by 10-years rolling average (on "replaced" s/hdates)
-  ARsd.a[ilon, ilat,] <- rollmean.in.steps(ARsd.m4[ilon, ilat,],
-                                           ARsd.r3[ilon, ilat,], kk = 10)
-  ARhd.a[ilon, ilat,] <- rollmean.in.steps(ARsd.m4[ilon, ilat,],
-                                           ARhd.r3[ilon, ilat,], kk = 10)
-  ARsd.a.m[ilon, ilat,] <- rollmean.in.steps(ARsd.m4[ilon, ilat,],
-                                             ARsd.r3[ilon, ilat,], kk = 10, marking = T)
-  ARhd.a.m[ilon, ilat,] <- rollmean.in.steps(ARsd.m4[ilon, ilat,],
-                                             ARhd.r3[ilon, ilat,], kk = 10, marking = T)
+  sd.a   <- rollmean.in.steps(sd.m4, sd.r3, kk = 30)
+  hd.a   <- rollmean.in.steps(sd.m4, hd.r3, kk = 30)
+  sd.a.m <- rollmean.in.steps(sd.m4, sd.r3, kk = 30, marking = T)
+  hd.a.m <- rollmean.in.steps(sd.m4, hd.r3, kk = 30, marking = T)
+  
+  ARsd.a[ilon, ilat,]   <- sd.a
+  ARhd.a[ilon, ilat,]   <- hd.a
+  ARsd.a.m[ilon, ilat,] <- sd.a.m
+  ARhd.a.m[ilon, ilat,] <- hd.a.m
   
   
   # Plot time series for testing ----
   # ------------------------------------------------------#
-  if ( makeplot==T && count%%1000==0 &&
-       ( any(diff(ARsd.a.m[ilon,ilat,])!=0) |
-         any(ARsd.m[ilon, ilat,]==1L) | any(ARhd.m[ilon, ilat,]==1L) |
-         any(ARsd.m3[ilon, ilat,]==2L) | any(ARhd.m3[ilon, ilat,]==2L) )) {
+  if ( any(diff(sd.a.m)!=0) | any(diff(hd.a.m)!=0) |
+       any(sd.m==1L) | any(hd.m==1L) |
+       any(sd.m3==2L) | any(hd.m3==2L) | any(ARdd[ilon, ilat,]==0) ) {
     
     count <- count + 1
     
-    pfile <- paste(lons[ilon], lats[ilat], crop.ls[["ggcmi"]][cr],
-                   irri.ls[["ggcmi"]][ir], GCM, sep="_")
-    pdf(paste0(pldir, pfile, ".pdf"), width = 7, height = 4)
+    if ( makeplot==T && count%%1000==0) {
+      
+      pfile <- paste(lons[ilon], lats[ilat], crop.ls[["ggcmi"]][cr],
+                     irri.ls[["ggcmi"]][ir], GCM, sep="_")
+      pdf(paste0(pldir, pfile, ".pdf"), width = 7, height = 4)
+      
+      layout(matrix(1:4, nrow = 2, byrow = T), heights = c(.55, .45))
+      par(cex.lab=0.7, cex.axis=0.7, cex.main=1)
+      par(mar = c(2,4,2,1)) #c(bottom, left, top, right)
+      
+      # sdate
+      plot(years,  ARsd[ilon, ilat,], type = "l", ylim = c(1,365), xlab = "", ylab = "sdate")
+      lines(years, sd.r3, type = "l", col = "blue")
+      lines(years, sd.a, type = "l", col = "red4", lty=2, lwd=2)
+      legend("topleft", lty=1, cex = .6, seg.len=.5, horiz=TRUE,
+             legend = c("sdate.original", "sdate.replaced", "sdate.averaged"),
+             col = c("black", "blue", "red4"))
+      
+      # hdate
+      plot(years,  ARhd[ilon, ilat,],  type = "l", ylim = c(1,365), xlab = "", ylab = "hdate")
+      lines(years, hd.r3, type = "l", col = "blue")
+      lines(years, hd.a, type = "l", col = "red4", lty=2, lwd=2)
+      legend("topleft", lty=1, cex = .6, seg.len=.5, horiz=TRUE,
+             legend = c("hdate.original", "hdate.replaced", "hdate.averaged"),
+             col = c("black", "blue", "red4"))
+      
+      # sdate classes
+      plot(years,  ARst[ilon, ilat,], type = "l", ylim = c(0,8), ylab = "sdate factors")
+      lines(years, st.r+.5, type = "l", col = "blue")
+      lines(years, ARdd[ilon, ilat,], type = "l", col = "orange")
+      lines(years, sd.a.m+.5, type = "l", col = "deeppink4")
+      legend("topleft", lty=1, cex = .6, seg.len=.5, horiz=TRUE,
+             legend = c("seasonalty.orig", "seasonalty.repl",
+                        "default.sdate", "avg.window"),
+             col = c("black", "blue", "orange", "deeppink4"))
+      
+      # hdate classes
+      plot(years,  ARhr[ilon, ilat,], type = "l", ylim = c(0,8), ylab = "hdate factors")
+      lines(years, hr.r+.5, type = "l", col = "blue")
+      lines(years, ARdd[ilon, ilat,], type = "l", col = "orange")
+      lines(years, hd.a.m+.5, type = "l", col = "deeppink4")
+      legend("topleft", lty=1, cex = .6, seg.len=.5, horiz=TRUE,
+             legend = c("hreason.orig", "hreason.repl",
+                        "default.sdate", "avg.window"),
+             col = c("black", "blue", "orange", "deeppink4"))
+      
+      dev.off()
+      
+    } # plot
     
-    layout(matrix(1:4, nrow = 2, byrow = T), heights = c(.55, .45))
-    par(cex.lab=0.7, cex.axis=0.7, cex.main=1)
-    par(mar = c(2,4,2,1)) #c(bottom, left, top, right)
     
-    # sdate
-    plot(years, ARsd[ilon, ilat,], type = "l", ylim = c(1,365), xlab = "", ylab = "sdate")
-    lines(years, ARsd.r3[ilon, ilat,], type = "l", col = "blue")
-    lines(years, ARsd.a[ilon, ilat,], type = "l", col = "red4", lty=2, lwd=2)
-    legend("topleft", lty=1, cex = .6, seg.len=.5, horiz=TRUE,
-           legend = c("sdate.original", "sdate.replaced", "sdate.averaged"),
-           col = c("black", "blue", "red4"))
-    
-    # hdate
-    plot(years, ARhd[ilon, ilat,],  type = "l", ylim = c(1,365), xlab = "", ylab = "hdate")
-    lines(years, ARhd.r3[ilon, ilat,], type = "l", col = "blue")
-    lines(years, ARhd.a[ilon, ilat,], type = "l", col = "red4", lty=2, lwd=2)
-    legend("topleft", lty=1, cex = .6, seg.len=.5, horiz=TRUE,
-           legend = c("hdate.original", "hdate.replaced", "hdate.averaged"),
-           col = c("black", "blue", "red4"))
-    
-    # sdate classes
-    plot(years, ARst[ilon, ilat,], type = "l", ylim = c(0,8), ylab = "sdate factors")
-    lines(years, ARdd[ilon, ilat,], type = "l", col = "orange")
-    lines(years, ARsd.m4[ilon, ilat,], type = "l", col = "deeppink4")
-    legend("topleft", lty=1, cex = .6, seg.len=.5, horiz=TRUE,
-           legend = c("seasonalty.original", "default.sdate", "seasonality.replaced"),
-           col = c("black", "orange", "deeppink4"))
-    
-    # hdate classes
-    plot(years, ARhr[ilon, ilat,], type = "l", ylim = c(0,8), ylab = "hdate factors")
-    lines(years, ARdd[ilon, ilat,], type = "l", col = "orange")
-    lines(years, ARhd.m4[ilon, ilat,], type = "l", col = "deeppink4")
-    legend("topleft", lty=1, cex = .6, seg.len=.5, horiz=TRUE,
-           legend = c("hreason.original", "default.sdate", "hreason.replaced"),
-           col = c("black", "orange", "deeppink4"))
-    
-    dev.off()
-    
-  } # plot
-  
-  
+  } # makeplot
 } #i
 
 cat("\nNr. of pixels for which sdate or hdate have been replaced: ",count,"\n")
+
+print(Sys.time()-stime)
 
 # Write NCDF file: ----
 # ------------------------------------------------------#
