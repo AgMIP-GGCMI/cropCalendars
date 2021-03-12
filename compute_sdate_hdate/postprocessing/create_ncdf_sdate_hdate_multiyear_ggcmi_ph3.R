@@ -38,6 +38,8 @@ source(paste0(working.dir, "postprocessing/ncdfs.R"))
 # PATHS ----
 dtdir <- paste0(project.dir, "crop_calendars/DT/")
 ncdir <- paste0(project.dir, "crop_calendars/ncdf/")
+pldir <- paste0(project.dir, "crop_calendars/plots/")
+ggdir <- "/p/projects/macmit/data/GGCMI/AgMIP.input/phase3/crop_calendar/"
 
 if (!dir.exists(ncdir)) dir.create(ncdir, recursive = T)
 
@@ -51,7 +53,7 @@ irri.ls <- list(all_low = c("rainfed", "irrigated"),
                 ggcmi   = c("rf", "ir"))
 
 # SELECT SCENARIO ----
-#___________________________________________________________#
+# ------------------------------------------------------#
 
 # import argument from bash script
 options(echo=FALSE) # if you want see commands in output file
@@ -95,11 +97,23 @@ for (ir in 1:2) { # irrigation index
   
   cat("Doing", irri.ls[["rb_cal"]][ir], "\n----------------\n")
   
-  # Initialize arrays for each variable
-  ARsd <- ARhd <- ARst <- ARhr <- ARss <- AR # ARgp
-  ARsd.r <- ARhd.r <- ARsd.m <- ARhd.m <- AR # s/hdate replacing and marking
-  ARsd.a <- ARhd.a <- AR # rolling average
+  # Get GGCMI phase 3 sowing and harvest dates (to replace default dates) ----
+  # ------------------------------------------------------#
+  fn <- paste0(ggdir, crop.ls[["ggcmi"]][cr], "_", irri.ls[["ggcmi"]][ir],
+               "_ggcmi_crop_calendar_phase3_v1.01.nc4")
+  nf <- nc_open(fn)
+  sdggcmi <- ncvar_get(nf, "planting_day", c(1,1), c(720,360))[,360:1]
+  hdggcmi <- ncvar_get(nf, "maturity_day", c(1,1), c(720,360))[,360:1]
+  nc_close(nf)
   
+  
+  # Initialize arrays for each variable
+  # ------------------------------------------------------#
+  ARsd <- ARhd <- ARst <- ARhr <- ARss <- AR # ARgp
+  ARdd <- AR # default sdate
+
+  # Loop through time-slice-specific DT and fill in arrays
+  # ------------------------------------------------------#
   for (tt in 1:length(SYs)) { # time-slice index
     
     iyears <- which(years==SYs[tt]):which(years==EYs[tt])
@@ -128,39 +142,153 @@ for (ir in 1:2) { # irrigation index
         ARst[ilon, ilat, j] <- DT$seasonality_type[i]
         ARhr[ilon, ilat, j] <- DT$harvest_reason[i]
         ARss[ilon, ilat, j] <- DT$sowing_season[i]
+        ARdd[ilon, ilat, j] <- ifelse(DT$sowing_month[i]==0, 0, 1) # mask of default month
         
       } # j
-      
-      # Filter sdate and hdates:
-      # --------------------------# 
-      # Check for temporary changes in seasonality type, replace and mark
-      ARsd.r[ilon, ilat,] <- replace.jumps(ARst[ilon, ilat,], ARsd[ilon, ilat,])
-      ARsd.m[ilon, ilat,] <- replace.jumps(ARst[ilon, ilat,], ARsd[ilon, ilat,], marking = T)
-      
-      # Check for temporary changes in harvest reason, replace and mark
-      ARhd.r[ilon, ilat,] <- replace.jumps(ARhr[ilon, ilat,], ARhd[ilon, ilat,])
-      ARhd.m[ilon, ilat,] <- replace.jumps(ARhr[ilon, ilat,], ARhd[ilon, ilat,], marking = T)
-      
-      # Interpolated sdate:
-      # --------------------------# 
-      # Compute annual sdate by 10-years rolling average (on "replaced" sdate)
-      kk <- 10 # years for rollmean (k parameter) 
-      t1 <- 1; t2 <- 4; t3 <- length(years)-4; t4 <- length(years) # t2=(kk/2)-1
-      # concatenate first and last values, as rolling average trims edges
-      ARsd.tmp <- c(ARsd.r[ilon, ilat,t1:t2],
-                    ARsd.r[ilon, ilat,],
-                    ARsd.r[ilon, ilat,t3:t4])
-      ARsd.a[ilon, ilat,] <- rollmean(ARsd.tmp, k = 10)
-      # concatenate first and last values, as rolling average trims edges
-      ARhd.tmp <- c(ARhd.r[ilon, ilat,t1:t2],
-                    ARhd.r[ilon, ilat,],
-                    ARhd.r[ilon, ilat,t3:t4])
-      ARhd.a[ilon, ilat,] <- rollmean(ARhd.tmp, k = 10)
-      
     } # i
     cat("\n")
     
   } # tt
+  
+  # Loop through pixels and filter + interpolate time series
+  # ------------------------------------------------------#
+  
+  # Initialize arrays for each variable
+  # --------------------------#
+  ARsd.r <- ARhd.r <- ARsd.m <- ARhd.m <- AR # s/hdate replacing and marking
+  ARst.r <- ARhr.r <- AR                     # seasonality/harv.reas. replacing
+  ARsd.a <- ARhd.a <- AR                     # rolling average
+  
+  count <- 0                                 # for plotting only some pixels
+  
+  for (i in 1:nrow(DT)) {
+    
+    if(i%%1e4==0) cat(i, "\t")
+    
+    ilat <- which(lats==DT$lat[i])
+    ilon <- which(lons==DT$lon[i])
+    
+    # Filter sdate and hdates: ----
+    # ------------------------------------------------------#
+    
+    # Check for temporary changes in Seasonality Type, replace and mark
+    ARsd.r[ilon, ilat,] <- replace.jumps(ARst[ilon, ilat,], ARsd[ilon, ilat,])
+    ARst.r[ilon, ilat,] <- replace.jumps(ARst[ilon, ilat,], ARst[ilon, ilat,],
+                                         replacing.value = "previous")
+    ARsd.m[ilon, ilat,] <- replace.jumps(ARst[ilon, ilat,], ARsd[ilon, ilat,],
+                                         marking = T, mark.value = 1L)
+    
+    # Check for temporary changes in Harvest Reason, replace and mark
+    ARhd.r[ilon, ilat,] <- replace.jumps(ARhr[ilon, ilat,], ARhd[ilon, ilat,])
+    ARhr.r[ilon, ilat,] <- replace.jumps(ARhr[ilon, ilat,], ARhr[ilon, ilat,],
+                                         replacing.value = "next")
+    ARhd.m[ilon, ilat,] <- replace.jumps(ARhr[ilon, ilat,], ARhd[ilon, ilat,],
+                                         marking = T, mark.value = 1L)
+    
+    # --------------------------#
+    
+    ARsd.r2 <- ARsd.r; ARhd.r2 <- ARhd.r; ARsd.m2 <- ARsd.m; ARhd.m2 <- ARhd.m
+    
+    # Replace default dates with GGCMI phase3 dates
+    ARsd.r2[ilon, ilat, which(ARdd[ilon, ilat,]==0)] <- sdggcmi[ilon, ilat]
+    ARhd.r2[ilon, ilat, which(ARdd[ilon, ilat,]==0)] <- hdggcmi[ilon, ilat]
+    
+    # --------------------------#
+    
+    ARsd.r3 <- ARsd.r2; ARhd.r3 <- ARhd.r2; ARsd.m3 <- ARsd.m2; ARhd.m3 <- ARhd.m2
+    
+    # Check for temporary Default Sdate, replace sdate and mark
+    ARsd.r3[ilon, ilat,] <- replace.jumps(ARdd[ilon, ilat,], ARsd.r2[ilon, ilat,])
+    ARsd.m3[ilon, ilat,] <- replace.jumps(ARdd[ilon, ilat,], ARsd.r2[ilon, ilat,],
+                                         marking = T, mark.value = 2L)
+    
+    # Check for temporary Default Sdate, replace hdate and mark
+    ARhd.r3[ilon, ilat,] <- replace.jumps(ARdd[ilon, ilat,], ARhd.r2[ilon, ilat,])
+    ARhd.m3[ilon, ilat,] <- replace.jumps(ARdd[ilon, ilat,], ARhd.r2[ilon, ilat,],
+                                         marking = T, mark.value = 2L)
+    
+    # --------------------------#
+    
+    ARsd.m4 <- ARsd.m3; ARhd.m4 <- ARhd.m3
+    
+    # Add Seasonality type and Default date vector to identify all jumps to be
+    #  considered as windows for rolling mean
+    ARsd.m4[ilon, ilat,] <- ARst.r[ilon, ilat,] + ARdd[ilon, ilat,]
+    ARhd.m4[ilon, ilat,] <- ARhr.r[ilon, ilat,] + ARdd[ilon, ilat,]
+    
+    
+    # Interpolated sdate: ----
+    # ------------------------------------------------------#
+    ARsd.a.m <- ARhd.a.m <- AR
+    
+    # Compute annual sdate by 10-years rolling average (on "replaced" s/hdates)
+    ARsd.a[ilon, ilat,] <- rollmean.in.steps(ARsd.m4[ilon, ilat,],
+                                             ARsd.r3[ilon, ilat,], kk = 10)
+    ARhd.a[ilon, ilat,] <- rollmean.in.steps(ARsd.m4[ilon, ilat,],
+                                             ARhd.r3[ilon, ilat,], kk = 10)
+    ARsd.a.m[ilon, ilat,] <- rollmean.in.steps(ARsd.m4[ilon, ilat,],
+                                             ARsd.r3[ilon, ilat,], kk = 10, marking = T)
+    ARhd.a.m[ilon, ilat,] <- rollmean.in.steps(ARsd.m4[ilon, ilat,],
+                                             ARhd.r3[ilon, ilat,], kk = 10, marking = T)
+    
+    
+    # Plot time series for testing ----
+    # ------------------------------------------------------#
+    if ( makeplot==T && count%%1000==0 &&
+         ( any(diff(ARsd.a.m[ilon,ilat,])!=0) |
+          any(ARsd.m[ilon, ilat,]==1L) | any(ARhd.m[ilon, ilat,]==1L) |
+          any(ARsd.m3[ilon, ilat,]==2L) | any(ARhd.m3[ilon, ilat,]==2L) )) {
+      
+      count <- count + 1
+      
+      pfile <- paste(lons[ilon], lats[ilat], crop.ls[["ggcmi"]][cr],
+                     irri.ls[["ggcmi"]][ir], GCM, sep="_")
+      pdf(paste0(pldir, pfile, ".pdf"), width = 7, height = 4)
+      
+      layout(matrix(1:4, nrow = 2, byrow = T), heights = c(.55, .45))
+      par(cex.lab=0.7, cex.axis=0.7, cex.main=1)
+      par(mar = c(2,4,2,1)) #c(bottom, left, top, right)
+      
+      # sdate
+      plot(years, ARsd[ilon, ilat,], type = "l", ylim = c(1,365), xlab = "", ylab = "sdate")
+      lines(years, ARsd.r3[ilon, ilat,], type = "l", col = "blue")
+      lines(years, ARsd.a[ilon, ilat,], type = "l", col = "red4", lty=2, lwd=2)
+      legend("topleft", lty=1, cex = .6, seg.len=.5, horiz=TRUE,
+             legend = c("sdate.original", "sdate.replaced", "sdate.averaged"),
+             col = c("black", "blue", "red4"))
+      
+      # hdate
+      plot(years, ARhd[ilon, ilat,],  type = "l", ylim = c(1,365), xlab = "", ylab = "hdate")
+      lines(years, ARhd.r3[ilon, ilat,], type = "l", col = "blue")
+      lines(years, ARhd.a[ilon, ilat,], type = "l", col = "red4", lty=2, lwd=2)
+      legend("topleft", lty=1, cex = .6, seg.len=.5, horiz=TRUE,
+             legend = c("hdate.original", "hdate.replaced", "hdate.averaged"),
+             col = c("black", "blue", "red4"))
+      
+      # sdate classes
+      plot(years, ARst[ilon, ilat,], type = "l", ylim = c(0,8), ylab = "sdate factors")
+      lines(years, ARdd[ilon, ilat,], type = "l", col = "orange")
+      lines(years, ARsd.m4[ilon, ilat,], type = "l", col = "deeppink4")
+      legend("topleft", lty=1, cex = .6, seg.len=.5, horiz=TRUE,
+             legend = c("seasonalty.original", "default.sdate", "seasonality.replaced"),
+             col = c("black", "orange", "deeppink4"))
+      
+      # hdate classes
+      plot(years, ARhr[ilon, ilat,], type = "l", ylim = c(0,8), ylab = "hdate factors")
+      lines(years, ARdd[ilon, ilat,], type = "l", col = "orange")
+      lines(years, ARhd.m4[ilon, ilat,], type = "l", col = "deeppink4")
+      legend("topleft", lty=1, cex = .6, seg.len=.5, horiz=TRUE,
+             legend = c("hreason.original", "default.sdate", "hreason.replaced"),
+             col = c("black", "orange", "deeppink4"))
+      
+      dev.off()
+      
+    } # plot
+    
+    
+  } #i
+  
+  cat("\nNr. of pixels for which sdate or hdate have been replaced: ",count,"\n")
   
   # Write NCDF file: ----
   # ------------------------------------------------------#
@@ -199,17 +327,23 @@ for (ir in 1:2) { # irrigation index
   sowse_def <- ncvar_def(name="plant-season", units="days", dim=nc_dimension,
                          longname = "Sowing season (Spring / Winter)",
                          prec="single", compression = 6)
-  sdrep_def  <- ncvar_def(name="plant-day-replaced", units="boolean", dim=nc_dimension,
-                          longname = "Mark of replaced sowing dates to avoid jumps",
+  # sdrep_def  <- ncvar_def(name="plant-day-replaced", units="boolean", dim=nc_dimension,
+  #                         longname = "Mark of replaced sowing dates to avoid jumps",
+  #                         prec="single", compression = 6)
+  # hdrep_def  <- ncvar_def(name="maty-day-replaced", units="boolean", dim=nc_dimension,
+  #                         longname = "Mark of replaced harvest dates to avoid jumps",
+  #                         prec="single", compression = 6)
+  sroll_def <- ncvar_def(name="plant-day-rollmean-window", units="sequential nr.", dim=nc_dimension,
+                          longname = "Mark of roll-averaged sowing dates after filtering for jumps",
                           prec="single", compression = 6)
-  hdrep_def  <- ncvar_def(name="maty-day-replaced", units="boolean", dim=nc_dimension,
-                          longname = "Mark of replaced harvest dates to avoid jumps",
+  hroll_def <- ncvar_def(name="maty-day-rollmean-window", units="sequential nr.", dim=nc_dimension,
+                          longname = "Mark of roll-averaged maturity dates after filtering for jumps",
                           prec="single", compression = 6)
   
   # Create netCDF file and put arrays
   ncout <- nc_create(ncfname, list(sdate_def, hdate_def, #growp_def,
                                    seast_def, harvr_def, sowse_def,
-                                   sdrep_def, hdrep_def),verbose = F)
+                                   sroll_def, hroll_def),verbose = F)
   
   # Put variables
   ncvar_put(ncout, sdate_def, ARsd.a) # sdate interpolated by rolling mean
@@ -218,8 +352,8 @@ for (ir in 1:2) { # irrigation index
   ncvar_put(ncout, seast_def, ARst)
   ncvar_put(ncout, harvr_def, ARhr)
   ncvar_put(ncout, sowse_def, ARss)
-  ncvar_put(ncout, sdrep_def, ARsd.m)
-  ncvar_put(ncout, hdrep_def, ARhd.m)
+  ncvar_put(ncout, sroll_def, ARsd.a.m)
+  ncvar_put(ncout, hroll_def, ARhd.a.m)
   
   # Put additional attributes into dimension and data variables
   ncatt_put(ncout,"lon","axis","X") #,verbose=FALSE) #,definemode=FALSE)

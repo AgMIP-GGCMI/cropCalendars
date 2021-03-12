@@ -2,9 +2,13 @@
 # time series of sowing or harvest dates.
 # If marking = T, boolean to mark which values are replaced: 0 = original, 1 = replaced
 
-replace.jumps <- function(vec.class, vec.date, min.period = 20, marking = F) {
+replace.jumps <- function(vec.class, vec.date,
+                          replacing.value = "mean", min.period = 20,
+                          marking = F, mark.value = 1L) {
+  
   # vec.class: vector of seasonality or harvest reason
   # vec.date:  vector of sowing or harvest dates
+  
   vec.date.out <- vec.date
   mark.replaced <- vec.date; mark.replaced[] <- 0L
   
@@ -16,11 +20,23 @@ replace.jumps <- function(vec.class, vec.date, min.period = 20, marking = F) {
   
   # if tmp changes exist, replace with mean value of neighboring time periods
   if (length(y1)>0)
+    
     # loop through actual jumps only (odd indices), skip returns to "normal" value
     for (i in which( (1:length(y1))%%2==1 ) ) { # x%%2==1 finds odd nr.
-      vec.date.out[y1[i]:(y2[i]-1)] <- round(mean(c(vec.date.out[y1[i]-1],
-                                                    vec.date.out[y2[i]+1])))
-      mark.replaced[y1[i]:(y2[i]-1)] <- 1L
+      
+      vprev <- vec.date.out[y1[i]-1] # value of previous time slice
+      vnext <- vec.date.out[y2[i]+1] # value next time slice
+      
+      if (replacing.value=="mean") {
+        vec.date.out[y1[i]:(y2[i]-1)] <- round(mean(c(vprev, vnext)))
+      } else if (replacing.value=="previous") {
+        vec.date.out[y1[i]:(y2[i]-1)] <- vprev
+      } else if (replacing.value=="next") {
+        vec.date.out[y1[i]:(y2[i]-1)] <- vnext
+      }
+      
+      # Mark value to flag values that have been replaced
+      mark.replaced[y1[i]:(y2[i]-1)] <- mark.value
     }
   if (!marking) return(vec.date.out) else return(mark.replaced)
 }
