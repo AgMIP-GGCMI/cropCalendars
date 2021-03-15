@@ -224,9 +224,9 @@ for (i in 1:nrow(DT)) {
 
   # Compute annual sdate by 10-years rolling average (on "replaced" s/hdates)
   sdate.a   <- rollmean.in.steps(sdate.m4, sdate.r3, kk = 30)
-  hdate.a   <- rollmean.in.steps(sdate.m4, hdate.r3, kk = 30)
+  hdate.a   <- rollmean.in.steps(hdate.m4, hdate.r3, kk = 30)
   sdate.a.m <- rollmean.in.steps(sdate.m4, sdate.r3, kk = 30, marking = T)
-  hdate.a.m <- rollmean.in.steps(sdate.m4, hdate.r3, kk = 30, marking = T)
+  hdate.a.m <- rollmean.in.steps(hdate.m4, hdate.r3, kk = 30, marking = T)
   
   # Fill in new arrays with filtered values
   ARst.r[ilon, ilat,]   <- seast.r
