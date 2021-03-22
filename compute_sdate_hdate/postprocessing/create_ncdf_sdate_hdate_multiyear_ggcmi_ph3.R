@@ -36,23 +36,6 @@ source(paste0(working.dir, "configuration/configuration_ggcmi_ph3.R"))
 source(paste0(working.dir, "postprocessing/functions_lpjml_input_output.R"))
 source(paste0(working.dir, "postprocessing/ncdfs.R"))
 
-# PATHS ----
-dtdir <- paste0(project.dir, "crop_calendars/DT/")
-ncdir <- paste0(project.dir, "crop_calendars/ncdf/")
-pldir <- paste0(project.dir, "crop_calendars/plots/")
-ggdir <- "/p/projects/macmit/data/GGCMI/AgMIP.input/phase3/crop_calendar/"
-
-if (!dir.exists(ncdir)) dir.create(ncdir, recursive = T)
-
-# Crop Names: ----
-# rb_cal = rule-based calendar, ggcmi = ggcmi ph3
-crop.ls <- list(all_low = c("maize", "rice", "sorghum", "soybean", "spring_wheat", "winter_wheat"),
-                rb_cal  = c("Maize", "Rice", "Sorghum", "Soybean", "Spring_Wheat", "Winter_Wheat"),
-                ggcmi   = c("mai", "ric", "sor", "soy", "swh", "wwh"))
-irri.ls <- list(all_low = c("rainfed", "irrigated"),
-                rb_cal  = c("Rainfed", "Irrigated"),
-                ggcmi   = c("rf", "ir"))
-
 # SELECT SCENARIO ----
 # ------------------------------------------------------#
 
@@ -67,15 +50,35 @@ IRRI <- args[2]
 GCM  <- args[3]
 SC   <- args[4]
 
-SYs <- seq(1981, 2091, by = 10) # Start of the period
-EYs <- seq(1990, 2100, by = 10) # End of the period
-FYs <- seq(1961, 2071, by = 10) # First year DT file
-LYs <- seq(1990, 2100, by = 10) # Last year DT file
+# Sowing and cultivar to change every 10 years
+SYs <- seq(1991, 2091, by = 10) # Start of the period
+EYs <- seq(2000, 2100, by = 10) # End of the period
+# Computing sowing and harvest dates based on preceding 30-years climate
+FYs <- seq(1961, 2061, by = 10) # First year DT file (output of main.R)
+LYs <- seq(1990, 2090, by = 10) # Last  year DT file (output of main.R)
 
 nhist <- length(EYs[EYs<2015]) # number of historical time slices
 HYs <- c(rep("historical", nhist), rep(SC, length(SYs)-nhist)) # historical/ssp years
 
 print(SYs); print(EYs)
+
+
+# PATHS ----
+dtdir <- paste0(project.dir, "crop_calendars/DT/")
+ncdir <- paste0(project.dir, "crop_calendars/ncdf/", GCM, "/", SC, "/")
+pldir <- paste0(project.dir, "crop_calendars/plots/")
+ggdir <- "/p/projects/macmit/data/GGCMI/AgMIP.input/phase3/crop_calendar/"
+
+if (!dir.exists(ncdir)) dir.create(ncdir, recursive = T)
+
+# Crop Names: ----
+# rb_cal = rule-based calendar, ggcmi = ggcmi ph3
+crop.ls <- list(all_low = c("maize", "rice", "sorghum", "soybean", "spring_wheat", "winter_wheat"),
+                rb_cal  = c("Maize", "Rice", "Sorghum", "Soybean", "Spring_Wheat", "Winter_Wheat"),
+                ggcmi   = c("mai", "ric", "sor", "soy", "swh", "wwh"))
+irri.ls <- list(all_low = c("rainfed", "irrigated"),
+                rb_cal  = c("Rainfed", "Irrigated"),
+                ggcmi   = c("rf", "ir"))
 
 # Initialize array for ncdf ----
 # ------------------------------------------------------#
@@ -120,7 +123,8 @@ for (tt in 1:length(SYs)) { # time-slice index
   cat("Doing", years[iyears], "\n")
   
   # Crop calendar DT.Rdata file
-  fname <- paste0(output.dir, "DT_output_crop_calendars_", CROP, "_", GCM,
+  fname <- paste0(paste0(output.dir, "/", HYs[tt], "/"),
+                  "DT_output_crop_calendars_", CROP, "_", GCM,
                   "_", HYs[tt], "_", FYs[tt], "_", LYs[tt], ".Rdata")
   DT <- get(load(fname))[irrigation==irri.ls[["rb_cal"]][ir]] # subset irrig
   print(dim(DT))
@@ -142,7 +146,7 @@ for (tt in 1:length(SYs)) { # time-slice index
       ARst[ilon, ilat, j] <- DT$seasonality_type[i]
       ARhr[ilon, ilat, j] <- DT$harvest_reason[i]
       ARss[ilon, ilat, j] <- DT$sowing_season[i]
-      ARdd[ilon, ilat, j] <- ifelse(DT$sowing_month[i]==0, 0, 1) # mask of default month
+      ARdd[ilon, ilat, j] <- ifelse(DT$sowing_month[i]==0, 0, 1) # mask of default sdate
       
     } # j
   } # i
@@ -162,8 +166,18 @@ ARst.r <- ARhr.r <- AR                     # seasonality/harv.reas. replacing
 ARsd.a <- ARhd.a <- AR                     # rolling average
 ARsd.a.m <- ARhd.a.m <- AR
 
-count <- 0                                 # for plotting only some pixels
 
+# Keep track of replaced values
+# --------------------------#
+count <- 0                                 # for plotting only some pixels
+count.dt <- data.frame(lon            = numeric(),
+                       lat            = numeric(),
+                       sdate.smoothed = logical(), # jumps removed
+                       hdate.smoothed = logical(), # jumps removed
+                       ddate.smoothed = logical(), # jumps removed
+                       ddate.replaced = logical()) # default date replaced with ggcmi
+
+# --------------------------#
 for (i in 1:nrow(DT)) {
   #for (i in 1:1000) { 
   if(i%%1e3==0) cat(i, "\t") #else cat(".")
@@ -171,13 +185,13 @@ for (i in 1:nrow(DT)) {
   ilat <- which(lats==DT$lat[i])
   ilon <- which(lons==DT$lon[i])
   
-  sdate <- ARsd[ilon, ilat,]
-  seast <- ARst[ilon, ilat,]
-  hdate <- ARhd[ilon, ilat,]
-  hreas <- ARhr[ilon, ilat,]
-  ddate <- ARdd[ilon, ilat,]
-  sggcm <- sdggcmi[ilon, ilat]
-  hggcm <- hdggcmi[ilon, ilat]
+  sdate <- ARsd[ilon, ilat,]   # sowing date
+  seast <- ARst[ilon, ilat,]   # seasonality type
+  hdate <- ARhd[ilon, ilat,]   # harvest date
+  hreas <- ARhr[ilon, ilat,]   # harvest reason
+  ddate <- ARdd[ilon, ilat,]   # default date == 0
+  sggcm <- sdggcmi[ilon, ilat] # sowing date ggcmi
+  hggcm <- hdggcmi[ilon, ilat] # harvest date ggcmi
   
   # Filter sdate and hdates: ----
   # ------------------------------------------------------#
@@ -206,6 +220,7 @@ for (i in 1:nrow(DT)) {
   # Check for temporary Default Sdate, replace sdate and mark
   sdate.r3 <- replace.jumps(ddate, sdate.r2)
   sdate.m3 <- replace.jumps(ddate, sdate.r2, marking = T, mark.value = 2L)
+  ddate.r  <- replace.jumps(ddate, ddate, replacing.value = "previous")
   
   # Check for temporary Default Sdate, replace hdate and mark
   hdate.r3 <- replace.jumps(ddate, hdate.r2)
@@ -217,11 +232,11 @@ for (i in 1:nrow(DT)) {
   #  considered as windows for rolling mean
   sdate.m4 <- seast.r + ddate
   hdate.m4 <- hreas.r + ddate
-
+  
   
   # Interpolated sdate: ----
   # ------------------------------------------------------#
-
+  
   # Compute annual sdate by 10-years rolling average (on "replaced" s/hdates)
   sdate.a   <- rollmean.in.steps(sdate.m4, sdate.r3, kk = 30)
   hdate.a   <- rollmean.in.steps(hdate.m4, hdate.r3, kk = 30)
@@ -235,13 +250,20 @@ for (i in 1:nrow(DT)) {
   ARhd.a[ilon, ilat,]   <- hdate.a
   ARsd.a.m[ilon, ilat,] <- sdate.a.m
   ARhd.a.m[ilon, ilat,] <- hdate.a.m
-
+  
+  count.dt <- rbind(count.dt,
+                    data.frame(pixelnr = i,
+                               lon            = DT$lon[i],
+                               lat            = DT$lat[i],
+                               sdate.smoothed = any(sdate.m==1L), # jumps removed
+                               hdate.smoothed = any(hdate.m==1L), # jumps removed
+                               ddate.smoothed = any(sdate.m3==2L), # jumps removed
+                               ddate.replaced = any(ddate.r==0)) # default date replaced with ggcmi
+  )
   
   # Plot time series for testing ----
   # ------------------------------------------------------#
-  if ( any(diff(sdate.a.m)!=0) | any(diff(hdate.a.m)!=0) |
-       any(sdate.m==1L) | any(hdate.m==1L) |
-       any(sdate.m3==2L) | any(hdate.m3==2L) | any(ddate==0) ) {
+  if ( any(count.dt[i,]) ) {
     
     count <- count + 1
     
@@ -259,8 +281,11 @@ for (i in 1:nrow(DT)) {
       
       # sdate
       plot(years,  sdate, type = "l", ylim = c(1,365), xlab = "", ylab = "sdate")
+      text(x = 2040, y = 300,
+           labels = paste0(crop.ls[["all_low"]][cr], " ", irri.ls[["all_low"]][ir], "; ",
+                           "lon/lat: ", lons[ilon], "/", lats[ilat]), cex = .7)
       lines(years, sdate.r3, type = "l", col = "blue")
-      lines(years, sdate.a, type = "l", col = "red4", lty=2, lwd=2)
+      lines(years, sdate.a, type = "l", col = "red4", lty=2)#, lwd=2)
       legend("topleft", lty=1, cex = .6, seg.len=.5, horiz=TRUE,
              legend = c("sdate.original", "sdate.replaced", "sdate.averaged"),
              col = c("black", "blue", "red4"))
@@ -268,7 +293,7 @@ for (i in 1:nrow(DT)) {
       # hdate
       plot(years,  hdate,  type = "l", ylim = c(1,365), xlab = "", ylab = "hdate")
       lines(years, hdate.r3, type = "l", col = "blue")
-      lines(years, hdate.a, type = "l", col = "red4", lty=2, lwd=2)
+      lines(years, hdate.a, type = "l", col = "red4", lty=2)#, lwd=2)
       legend("topleft", lty=1, cex = .6, seg.len=.5, horiz=TRUE,
              legend = c("hdate.original", "hdate.replaced", "hdate.averaged"),
              col = c("black", "blue", "red4"))
@@ -277,7 +302,7 @@ for (i in 1:nrow(DT)) {
       plot(years,  seast, type = "l", ylim = c(0,8), ylab = "sdate factors")
       lines(years, seast.r, type = "l", col = "blue")
       lines(years, ddate, type = "l", col = "orange")
-      lines(years, sdate.a.m+.5, type = "l", col = "red4", lty=2, lwd=2)
+      lines(years, sdate.a.m+.5, type = "l", col = "red4", lty=2)#, lwd=2)
       legend("topleft", lty=1, cex = .5, seg.len=.5, horiz=TRUE,
              legend = c("seasonalty.orig", "seasonalty.repl",
                         "default.sdate", "avg.window"),
@@ -287,7 +312,7 @@ for (i in 1:nrow(DT)) {
       plot(years,  hreas, type = "l", ylim = c(0,8), ylab = "hdate factors")
       lines(years, hreas.r, type = "l", col = "blue")
       lines(years, ddate, type = "l", col = "orange")
-      lines(years, hdate.a.m+.5, type = "l", col = "red4", lty=2, lwd=2)
+      lines(years, hdate.a.m+.5, type = "l", col = "red4", lty=2)#, lwd=2)
       legend("topleft", lty=1, cex = .5, seg.len=.5, horiz=TRUE,
              legend = c("hreason.orig", "hreason.repl",
                         "default.sdate", "avg.window"),
@@ -303,6 +328,12 @@ for (i in 1:nrow(DT)) {
 
 cat("\nNr. of pixels for which sdate or hdate have been replaced: ",count,"\n")
 
+# Write count.dt in a csv file to record which pixels have replaced values ----
+write.csv(count.dt, paste0(ncdir,
+                           crop.ls[["ggcmi"]][cr], "_", irri.ls[["ggcmi"]][ir],
+                           "_", GCM, "_", SC, "_", min(SYs), "-", max(EYs),
+                           "_pixels_with_filtered_values.csv"))
+
 print(Sys.time()-stime)
 
 # Write NCDF file: ----
@@ -310,7 +341,7 @@ print(Sys.time()-stime)
 
 ncfname <- paste0(ncdir,
                   crop.ls[["ggcmi"]][cr], "_", irri.ls[["ggcmi"]][ir],
-                  "_", GCM, "_", min(SYs), "-", max(EYs),
+                  "_", GCM, "_", SC, "_", min(SYs), "-", max(EYs),
                   "_ggcmi_ph3_rule_based_crop_calendar.nc4")
 
 # Define dimensions

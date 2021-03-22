@@ -73,6 +73,9 @@ CROP <- args[5]
 # If overlap historical / future need to read two files
 SC <- ifelse(EY <= 2014, "historical", SC)
 
+scen.dir <- paste0(output.dir, "/", SC)
+if (!dir.exists(scen.dir)) dir.create(scen.dir, recursive = T)
+
 # IMPORT CLIMATE DATA ----
 #___________________________________________________________#
 # get monthly climate data
@@ -195,8 +198,9 @@ DT$harvest_reason   <- factor(DT$harvest_reason, c(1:6), harvest_reason_labels)
 
 print(str(DT))
 
-
-save(DT, file = paste0(output.dir, "DT_output_crop_calendars_", CROP, "_", GCM, "_", SC, "_", SY, "_", EY, ".Rdata"))
+# Save data table ----
+save(DT, file = paste0(scen.dir, "DT_output_crop_calendars_",
+                       CROP, "_", GCM, "_", SC, "_", SY, "_", EY, ".Rdata"))
 
 
 # PLOT MAPS ----
