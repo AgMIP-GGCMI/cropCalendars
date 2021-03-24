@@ -73,7 +73,7 @@ CROP <- args[5]
 # If overlap historical / future need to read two files
 SC <- ifelse(EY <= 2014, "historical", SC)
 
-scen.dir <- paste0(output.dir, "/", SC)
+scen.dir <- paste0(output.dir, "/", SC, "/")
 if (!dir.exists(scen.dir)) dir.create(scen.dir, recursive = T)
 
 # IMPORT CLIMATE DATA ----
@@ -208,7 +208,7 @@ save(DT, file = paste0(scen.dir, "DT_output_crop_calendars_",
 cat("\n", paste("Plotting outputs ..."),
     "-------------------------------------------------------", sep = "\n")
 
-pdf(paste0(figure.dir, "map_crop_calendars_", CROP, "_", GCM, "_", SC, "_", SY, "_", EY, ".pdf"), width = a4w, height = a4h*0.4)
+pdf(paste0(scen.dir, "map_crop_calendars_", CROP, "_", GCM, "_", SC, "_", SY, "_", EY, ".pdf"), width = a4w, height = a4h*0.4)
 
     p <- ggplot.map.general(DT,
                             Value = "seasonality_type",

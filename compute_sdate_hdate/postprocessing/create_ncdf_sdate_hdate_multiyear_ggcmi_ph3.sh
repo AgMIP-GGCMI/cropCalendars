@@ -3,7 +3,7 @@
 wd=/home/minoli/crop_calendars_gitlab/ggcmi_ph3/compute_sdate_hdate
 
 gcms=('UKESM1-0-LL')
-scens=('ssp585')
+scens=('ssp585' 'ssp370' 'ssp126') #'ssp585' 'ssp370' 'ssp126'
 crops=('Maize' 'Rice' 'Sorghum' 'Soybean' 'Spring_Wheat' 'Winter_Wheat')
 irrigs=('Rainfed' 'Irrigated')
 #crops=('Maize')

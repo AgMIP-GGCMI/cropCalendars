@@ -5,7 +5,7 @@ module load piam
 wd=/home/minoli/crop_calendars_gitlab/ggcmi_ph3/compute_sdate_hdate
 
 gcms=('UKESM1-0-LL')
-scens=('ssp585')
+scens=('ssp585') #'ssp585' 'ssp370' 'ssp126'
 syears=('1961' '1971' '1981' '1991' '2001' '2011' '2021' '2031' '2041' '2051' '2061' '2071')
 eyears=('1990' '2000' '2010' '2020' '2030' '2040' '2050' '2060' '2070' '2080' '2090' '2100')
 crops=('Maize' 'Rice' 'Sorghum' 'Soybean' 'Spring_Wheat' 'Winter_Wheat')

@@ -57,10 +57,10 @@ EYs <- seq(2000, 2100, by = 10) # End of the period
 FYs <- seq(1961, 2061, by = 10) # First year DT file (output of main.R)
 LYs <- seq(1990, 2090, by = 10) # Last  year DT file (output of main.R)
 
-nhist <- length(EYs[EYs<2015]) # number of historical time slices
+nhist <- length(LYs[LYs<2015]) # number of historical time slices
 HYs <- c(rep("historical", nhist), rep(SC, length(SYs)-nhist)) # historical/ssp years
 
-print(SYs); print(EYs)
+print(SYs); print(EYs); print(FYs); print(LYs)
 
 
 # PATHS ----
@@ -123,7 +123,7 @@ for (tt in 1:length(SYs)) { # time-slice index
   cat("Doing", years[iyears], "\n")
   
   # Crop calendar DT.Rdata file
-  fname <- paste0(paste0(output.dir, "/", HYs[tt], "/"),
+  fname <- paste0(paste0(output.dir, HYs[tt], "/"),
                   "DT_output_crop_calendars_", CROP, "_", GCM,
                   "_", HYs[tt], "_", FYs[tt], "_", LYs[tt], ".Rdata")
   DT <- get(load(fname))[irrigation==irri.ls[["rb_cal"]][ir]] # subset irrig
