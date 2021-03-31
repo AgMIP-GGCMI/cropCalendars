@@ -42,7 +42,7 @@ source(paste0(working.dir, "postprocessing/ncdfs.R"))
 # import argument from bash script
 options(echo=FALSE) # if you want see commands in output file
 args <- commandArgs(trailingOnly = TRUE)
-# args <- c("Maize", "Rainfed", "UKESM1-0-LL", "ssp585")
+# args <- c("Maize", "Rainfed", "UKESM1-0-LL", "historical")
 print(args)
 
 CROP <- args[1]
@@ -50,17 +50,28 @@ IRRI <- args[2]
 GCM  <- args[3]
 SC   <- args[4]
 
-# Sowing and cultivar to change every 10 years
-SYs <- seq(1991, 2091, by = 10) # Start of the period
-EYs <- seq(2000, 2100, by = 10) # End of the period
-# Computing sowing and harvest dates based on preceding 30-years climate
-FYs <- seq(1961, 2061, by = 10) # First year DT file (output of main.R)
-LYs <- seq(1990, 2090, by = 10) # Last  year DT file (output of main.R)
+if (SC == "historical") {
+  # Sowing and cultivar to change every 10 years
+  SYs <-   seq(1991, 2011, by = 10) # Start of the period
+  EYs <- c(seq(2000, 2014, by = 10), 2014) # End of the period
+  # Computing sowing and harvest dates based on preceding 30-years climate
+  FYs <-   seq(1961, 1981, by = 10) # First year DT file (output of main.R)
+  LYs <-   seq(1990, 2010, by = 10) # Last  year DT file (output of main.R)
+  
+  HYs <- rep(SC, length(SYs))
+} else {
+  # Sowing and cultivar to change every 10 years
+  SYs <- c(2014, seq(2021, 2091, by = 10)) # Start of the period
+  EYs <- c(2020, seq(2030, 2100, by = 10)) # End of the period
+  # Computing sowing and harvest dates based on preceding 30-years climate
+  FYs <- seq(1981, 2061, by = 10) # First year DT file (output of main.R)
+  LYs <- seq(2010, 2090, by = 10) # Last  year DT file (output of main.R)
+  
+  nhist <- length(LYs[LYs<2015]) # number of historical time slices
+  HYs <- c(rep("historical", nhist), rep(SC, length(SYs)-nhist)) # historical/ssp years
+}
 
-nhist <- length(LYs[LYs<2015]) # number of historical time slices
-HYs <- c(rep("historical", nhist), rep(SC, length(SYs)-nhist)) # historical/ssp years
-
-print(SYs); print(EYs); print(FYs); print(LYs)
+print(data.frame(SYs, EYs, FYs, LYs, HYs))
 
 
 # PATHS ----
