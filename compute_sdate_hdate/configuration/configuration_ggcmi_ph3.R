@@ -11,7 +11,7 @@
 
 # PACKAGES ----
 #__________________________________________________________
-library(data.table) # more userfriendly dataframes
+library(data.table) # more user-friendly dataframes
 library(ggplot2)
 library(fields)
 library(hexbin) # to plot geom_hex
@@ -49,54 +49,19 @@ croppar.fn <- paste0(working.dir,"parameters/","crop_parameters.csv")
 ## Simulation climate settings file ----
 # simsetting.fn <- paste0(working.dir,"configuration/","scenarios_ggcmi_ph3.csv")
 
-# Crops
+# Crops ----
 crops <- c("Maize","Rice","Sorghum","Soybean","Spring_Wheat","Winter_Wheat")
 
-
-
-# IMPORT ----
-#___________________________________________________________#
-# Read grid input ----
-read.lpjml.grid <- function(fname = "grid/path/grid.bin",
-                            band_names = c("lon", "lat"),
-                            ncells = 67420,
-                            header = 43,
-                            nbands = 2,
-                            dtype =  integer(),
-                            dsize =  2,
-                            scalar = .01) {
-  
-  cat(paste("\nReading grid.bin (input/output):\n-------------------------------\n", fname))
-  
-  # check file size
-  check.fs <- (file.size(fname)-header)/ncells/dsize==nbands
-  cat(paste("\nFile size as expected = ", check.fs, "\n"))
-  
-  # read out data
-  fcon <- file(fname, open = "rb")
-  seek(con = fcon, where = header, origin = "start")
-  x <- array(NA, c(ncells, nbands))
-  for (i in 1:ncells){
-    x[i,] <- readBin(fcon, what = dtype, size = dsize , n = nbands)*scalar
-  }
-  close.connection(fcon)
-  colnames(x) <- band_names
-  cat(str(x))
-  return(x)
-}
-
-
-
-
 # Grid ----
+source(paste0(working.dir, "src/", "read.lpjml.grid.R"))
 coord.df <- as.data.frame(read.lpjml.grid(
   grid.fn, band_names = c("lon", "lat"), ncells = 67420, header = 43,
   nbands = 2, dtype =  integer(), dsize =  2, scalar = .01))
 
-# Constants
+# Constants ----
 source(paste0(working.dir, "parameters/", "constant_values.R"))
 
-# Parameters
+# Parameters ----
 cat("Importing parameter table for all crops ...",
     "-------------------------------------------",
     sep = "\n")
