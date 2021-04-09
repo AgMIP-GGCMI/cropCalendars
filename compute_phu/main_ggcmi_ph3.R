@@ -208,7 +208,7 @@ for (yy in 1:length(SYs)) {
   # Repeat same phu value for the time slice
   ys <- which(years%in%SYs[yy]:EYs[yy])
   for (j in 1:length(ys)) {
-    phu.cube[,,j] <- phu.annual 
+    phu.cube[,,ys[j]] <- phu.annual 
   }
   
 } # yy
