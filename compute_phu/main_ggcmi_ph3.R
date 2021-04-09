@@ -146,8 +146,8 @@ for (yy in 1:length(SYs)) {
     ilo <- which(lons==grid$lon[i])
     ila <- which(lats==grid$lat[i])
     
-    sdate.avg <- mean(sdate[ilo, ila, ])
-    hdate.avg <- mean(hdate[ilo, ila, ])
+    sdate.avg <- as.integer(mean(sdate[ilo, ila, ]))
+    hdate.avg <- as.integer(mean(hdate[ilo, ila, ]))
     
     dtemp <- tas_mean_day[i,]
     
@@ -206,7 +206,7 @@ for (yy in 1:length(SYs)) {
   } # i
   
   # Repeat same phu value for the time slice
-  ys <- which(SYs[yy]:EYs[yy]%in%years)
+  ys <- which(years%in%SYs[yy]:EYs[yy])
   for (j in 1:length(ys)) {
     phu.cube[,,j] <- phu.annual 
   }
