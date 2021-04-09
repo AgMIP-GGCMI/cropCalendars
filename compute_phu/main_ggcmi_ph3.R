@@ -121,7 +121,8 @@ phu.cube    <- array(NA, c(720, 360, nyears))
 # Loop through years ----
 for (yy in 1:length(SYs)) {
   
-
+  cat("\n--- Doing yy", yy, "---")
+  
   # ------------------------------------------------------#
   # Get Climate Data ----
   tas <- get.isimip.tas(GCM, SC, SYs[yy], EYs[yy])
@@ -174,7 +175,7 @@ for (yy in 1:length(SYs)) {
       # Calculate Vernalization Reduction Factors ----
       vrf <- calc.vrf(sdate = sdate.avg,
                       hdate = hdate.avg,
-                      mdt   = mtemp,
+                      mdt   = dtemp,
                       vd    = vd,
                       vd_b  = 0.2,
                       max.vern.days   = max.vern.days,
@@ -210,10 +211,14 @@ for (yy in 1:length(SYs)) {
   
 } # yy
 
+save(phu.cube, file = paste0(working.dir, "compute_phu/tmp/",
+                             crop.ls[["ggcmi"]][cr], "_", irri.ls[["ggcmi"]][ir],
+                             "_", GCM, "_", SC, "_", min(SYs), "-", max(EYs),
+                             "_ggcmi_ph3_rule_based_phu.Rdata"))
 
 # ------------------------------------------------------#
 # Write Crop-specific Output File ----
-# Write NCDF file: ----
+# Write NCDF file
 # ------------------------------------------------------#
 
 ncfname <- paste0(ncdir,
@@ -233,7 +238,7 @@ phu_def  <- ncvar_def(name="phu", units="degree days", dim=nc_dimension,
                         prec="single", compression = 6)
 
 # Create netCDF file and put arrays
-ncout <- nc_create(ncfname, list(phu_def,verbose = F))
+ncout <- nc_create(ncfname, list(phu_def), verbose = F)
 
 # Put variables
 ncvar_put(ncout, phu_def, phu.cube)
