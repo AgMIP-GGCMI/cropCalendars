@@ -18,28 +18,29 @@ library(zoo)       # for rolling mean
 
 # ----
 
+# Import Job Arguments ----
+# ------------------------------------------------------#
+options(echo=FALSE) # if want see commands in output file
+argr <- commandArgs(trailingOnly = TRUE)
+print(argr)
+# argr <- c("UKESM1-0-LL", "ssp585", "1991", "2014")
+
+GCM    <- argr[1]
+SC     <- argr[2]
+CROP   <- argr[3]
+IRRI   <- argr[4]
+
+# ------------------------------------------------------#
 # Paths ----
 working.dir <- "/home/minoli/crop_calendars_gitlab/ggcmi_ph3/"
 project.dir <- "/p/projects/macmit/users/minoli/PROJECTS/GGCMI_ph3_adaptation/"
 ncdir       <- paste0(project.dir, "crop_calendars/ncdf/", GCM, "/", SC, "/")
 
 # Functions ----
-source(paste0(working.dir, "src/import_functions.R"))
-import.functions(paste0(working.dir, "src/"))
+source(paste0(working.dir, "import.functions.R"))
 import.functions(paste0(working.dir, "compute_sdate_hdate/src/"))
 import.functions(paste0(working.dir, "compute_phu/src/"))
 
-# Import Job Arguments ----
-# ------------------------------------------------------#
-options(echo=FALSE) # if want see commands in output file
-args <- commandArgs(trailingOnly = TRUE)
-print(args)
-# args <- c("UKESM1-0-LL", "ssp585", "1991", "2014")
-
-GCM    <- args[1]
-SC     <- args[2]
-CROP   <- args[5]
-IRRI   <- args[6]
 
 if (SC == "historical") {
   # Sowing and cultivar to change every 10 years
