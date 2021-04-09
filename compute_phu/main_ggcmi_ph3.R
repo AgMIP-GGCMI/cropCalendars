@@ -23,7 +23,7 @@ library(zoo)       # for rolling mean
 options(echo=FALSE) # if want see commands in output file
 argr <- commandArgs(trailingOnly = TRUE)
 print(argr)
-# argr <- c("UKESM1-0-LL", "ssp585", "1991", "2014")
+# argr <- c("UKESM1-0-LL", "ssp585", "mai", "rf")
 
 GCM    <- argr[1]
 SC     <- argr[2]
@@ -46,15 +46,27 @@ if (SC == "historical") {
   # Sowing and cultivar to change every 10 years
   SYs <-   seq(1991, 2011, by = 10) # Start of the period
   EYs <- c(seq(2000, 2014, by = 10), 2014) # End of the period
+  # Computing sowing and harvest dates based on preceding 30-years climate
+  FYs <-   seq(1961, 1981, by = 10) # First year DT file (output of main.R)
+  LYs <-   seq(1990, 2010, by = 10) # Last  year DT file (output of main.R)
+  
   HYs <- rep(SC, length(SYs))
 } else {
   # Sowing and cultivar to change every 10 years
   SYs <- c(2014, seq(2021, 2091, by = 10)) # Start of the period
   EYs <- c(2020, seq(2030, 2100, by = 10)) # End of the period
+  # Computing sowing and harvest dates based on preceding 30-years climate
+  FYs <- seq(1981, 2061, by = 10) # First year DT file (output of main.R)
+  LYs <- seq(2010, 2090, by = 10) # Last  year DT file (output of main.R)
+  
   nhist <- length(LYs[LYs<2015]) # number of historical time slices
   HYs <- c(rep("historical", nhist), rep(SC, length(SYs)-nhist)) # historical/ssp years
 }
 
+print(data.frame(SYs, EYs, FYs, LYs, HYs))
+
+years  <- c(min(SYs):max(EYs))
+nyears <- length(years)
 
 
 # ------------------------------------------------------#
@@ -88,28 +100,25 @@ ncfname <- paste0(ncdir,
                   "_ggcmi_ph3_rule_based_crop_calendar.nc4")
 
 nc <- nc_open(ncfname)
-sdate <- ncvar_get(nc, varid = "plant-day", start = c(1,1,1), count = c(360, 720, nyears))
-hdate <- ncvar_get(nc, varid = "maty-day",  start = c(1,1,1), count = c(360, 720, nyears))
+sdate <- ncvar_get(nc, varid = "plant-day", start = c(1,1,1), count = c(720, 360, nyears))
+hdate <- ncvar_get(nc, varid = "maty-day",  start = c(1,1,1), count = c(720, 360, nyears))
 lons  <- ncvar_get(nc, varid = "lon")
 lats  <- ncvar_get(nc, varid = "lat")
 nc_close(nc)
 
 # ------------------------------------------------------#
 # Get Crop Parameters ----
-croppar.fn <- paste0(working.dir,"compute_phu/parameters/crop_pars_phase3.csv")
-crop_parameters_all <- read.csv(croppar.fn, header = T, stringsAsFactors = F)
+croppar.fn <- paste0(working.dir,"compute_phu/parameters/crop_pars_ggcmi_ph3.csv")
+croppar <- subset(read.csv(croppar.fn, header = T, stringsAsFactors = F), crop==CROP)
+basetemp      <- croppar$basetemp
+max.vern.days <- croppar$max.vern.days
+tv1           <- croppar$vern.temp.min
+tv2           <- croppar$vern.temp.opt.min
+tv3           <- croppar$vern.temp.opt.max
+tv4           <- croppar$vern.temp.max
 
-basetemp <- as.numeric(croppars[rownames(croppars)=="basetemp",names(croppars)==CROP])
-max.vern.days <- as.numeric(croppars[rownames(croppars)=="max.vern.days",names(croppars)==CROP])
-tv1 <- as.numeric(croppars[rownames(croppars)=="vern.temp.min",names(croppars)==CROP])
-tv2 <- as.numeric(croppars[rownames(croppars)=="vern.temp.opt.min",names(croppars)==CROP])
-tv3 <- as.numeric(croppars[rownames(croppars)=="vern.temp.opt.max",names(croppars)==CROP])
-tv4 <- as.numeric(croppars[rownames(croppars)=="vern.temp.max",names(croppars)==CROP])
 
 # ------------------------------------------------------#
-
-years  <- c(min(SYs):max(EYs))
-nyears <- length(years)
 
 phu.annual <- array(NA, c(360, 720))
 phu.cube    <- array(NA, c(360, 720, nyears))
