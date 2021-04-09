@@ -11,8 +11,6 @@
 # # Based on scripts by Jonas Jägermeyr
 # ------------------------------------------------------#
 
-rm(list=ls(all=T))
-
 # ----
 
 calc.vd <- function(temp_mean_month  = sample(-10:30, 12), # monthly mean temperature

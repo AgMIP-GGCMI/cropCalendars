@@ -11,8 +11,6 @@
 # # Based on scripts by Jonas Jägermeyr
 # ------------------------------------------------------#
 
-rm(list=ls(all=T))
-
 # ----
 
 calc.vrf <- function(sdate = NA, # sowing date (DOY)
