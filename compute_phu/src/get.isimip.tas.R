@@ -49,7 +49,7 @@ get.isimip.tas <- function(GCM, SC, SY, EY) {
                                nbands = 365, dtype = "integer", scalar = 0.1)
     
     # Collate period 1 and 2 in one array
-    tas <- pr <- array(NA, dim = c(NCELLS, 365, nyears))
+    tas <- array(NA, dim = c(NCELLS, 365, length(SY:EY)))
     tas[1:NCELLS, 1:365, 1:dim(tas1)[3]] <- tas1
     tas[1:NCELLS, 1:365, (dim(tas1)[3]+1):(dim(tas)[3])] <- tas2
     rm(tas1, tas2)
@@ -66,6 +66,7 @@ get.isimip.tas <- function(GCM, SC, SY, EY) {
                               nbands = 365, dtype = "integer", scalar = 0.1)
   }
   
+  return(tas)
   
 } # get.isimip.tas()
 

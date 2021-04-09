@@ -35,6 +35,7 @@ IRRI   <- argr[4]
 working.dir <- "/home/minoli/crop_calendars_gitlab/ggcmi_ph3/"
 project.dir <- "/p/projects/macmit/users/minoli/PROJECTS/GGCMI_ph3_adaptation/"
 ncdir       <- paste0(project.dir, "crop_calendars/ncdf/", GCM, "/", SC, "/")
+isimip3b.path  <- "/p/projects/lpjml/input/scenarios/ISIMIP3b/" # .clm climate
 
 # Functions ----
 source(paste0(working.dir, "import.functions.R"))
@@ -99,12 +100,6 @@ ncfname <- paste0(ncdir,
                   "_", GCM, "_", SC, "_", min(SYs), "-", max(EYs),
                   "_ggcmi_ph3_rule_based_crop_calendar.nc4")
 
-nc <- nc_open(ncfname)
-sdate <- ncvar_get(nc, varid = "plant-day", start = c(1,1,1), count = c(720, 360, nyears))
-hdate <- ncvar_get(nc, varid = "maty-day",  start = c(1,1,1), count = c(720, 360, nyears))
-lons  <- ncvar_get(nc, varid = "lon")
-lats  <- ncvar_get(nc, varid = "lat")
-nc_close(nc)
 
 # ------------------------------------------------------#
 # Get Crop Parameters ----
@@ -120,26 +115,38 @@ tv4           <- croppar$vern.temp.max
 
 # ------------------------------------------------------#
 
-phu.annual <- array(NA, c(360, 720))
-phu.cube    <- array(NA, c(360, 720, nyears))
+phu.annual  <- array(NA, c(720, 360))
+phu.cube    <- array(NA, c(720, 360, nyears))
 
 # Loop through years ----
 for (yy in 1:length(SYs)) {
   
+
   # ------------------------------------------------------#
   # Get Climate Data ----
-  tas <- get.isimip.tas(GCM, SC, SYs[yy], EYy[yy])
+  tas <- get.isimip.tas(GCM, SC, SYs[yy], EYs[yy])
   tas_mean_day <- apply(tas, c(1,2), mean)
+  
+  # ------------------------------------------------------#
+  # Get Sowing and Harvest dates
+  nc <- nc_open(ncfname)
+  sdate <- ncvar_get(nc, varid = "plant-day", start = c(1,1,1),
+                     count = c(720, 360, length(SYs[yy]:EYs[yy])))
+  hdate <- ncvar_get(nc, varid = "maty-day",  start = c(1,1,1),
+                     count = c(720, 360, length(SYs[yy]:EYs[yy])))
+  lons  <- ncvar_get(nc, varid = "lon")
+  lats  <- ncvar_get(nc, varid = "lat")
+  nc_close(nc)
   
   # ------------------------------------------------------#
   # Loop through grid cells ----
   for (i in 1:NCELLS) {
     
-    ilo <- which(lats==grid$lon[i])
-    ila <- which(lons==grid$lat[i])
+    ilo <- which(lons==grid$lon[i])
+    ila <- which(lats==grid$lat[i])
     
-    sdate.avg <- mean(sdate[ila, ilo, ])
-    hdate.avg <- mean(hdate[ila, ilo, ])
+    sdate.avg <- mean(sdate[ilo, ila, ])
+    hdate.avg <- mean(hdate[ilo, ila, ])
     
     dtemp <- tas_mean_day[i,]
     
@@ -155,38 +162,45 @@ for (yy in 1:length(SYs)) {
     
     # ------------------------------------------------------#
     # If Vernal-crop:
-    
-    # Calculate Vernalization Requirements ----
-    vd <- calc.vd(temp_mean_month  = mtemp,
-                  max.vern.days    = max.vern.days,
-                  max.vern.months  = 5,
-                  tv2              = tv2,
-                  tv3              = tv3)
-    
-    # Calculate Vernalization Reduction Factors ----
-    vrf <- calc.vrf(sdate = sdate.avg,
-                    hdate = hdate.avg,
-                    mdt   = mtemp,
-                    vd    = vd,
-                    vd_b  = 0.2,
-                    max.vern.days   = max.vern.days,
-                    max.vern.months = 5,
-                    tv1   = tv1,
-                    tv2   = tv2,
-                    tv3   = tv3,
-                    tv4   = tv4)
+    if (crop.ls[["vernal"]][cr] == "yes") {
+      
+      # Calculate Vernalization Requirements ----
+      vd <- calc.vd(temp_mean_month  = mtemp,
+                    max.vern.days    = max.vern.days,
+                    max.vern.months  = 5,
+                    tv2              = tv2,
+                    tv3              = tv3)
+      
+      # Calculate Vernalization Reduction Factors ----
+      vrf <- calc.vrf(sdate = sdate.avg,
+                      hdate = hdate.avg,
+                      mdt   = mtemp,
+                      vd    = vd,
+                      vd_b  = 0.2,
+                      max.vern.days   = max.vern.days,
+                      max.vern.months = 5,
+                      tv1   = tv1,
+                      tv2   = tv2,
+                      tv3   = tv3,
+                      tv4   = tv4)
+    } else {
+      
+      vrf <- rep(1, 365)
+      
+    }
+
     
     # ------------------------------------------------------#
     # Calculate Phenological Heat Unit Requirements ----
     
     phu <- calc.phu(sdate       = sdate.avg,
                     hdate       = hdate.avg,
-                    mdt         = mtemp,
+                    mdt         = dtemp,
                     vern_factor = vrf,
                     basetemp    = basetemp,
                     phen_model  = "tv")
     
-    phu.annual[ila, ilo] <- phu
+    phu.annual[ilo, ila] <- phu
     
   } # i
   
@@ -197,4 +211,43 @@ for (yy in 1:length(SYs)) {
 
 # ------------------------------------------------------#
 # Write Crop-specific Output File ----
+# Write NCDF file: ----
+# ------------------------------------------------------#
+
+ncfname <- paste0(ncdir,
+                  crop.ls[["ggcmi"]][cr], "_", irri.ls[["ggcmi"]][ir],
+                  "_", GCM, "_", SC, "_", min(SYs), "-", max(EYs),
+                  "_ggcmi_ph3_rule_based_phu.nc4")
+
+# Define dimensions
+londim <- ncdim_def("lon", "degrees_east",  lons)
+latdim <- ncdim_def("lat", "degrees_north", lats)
+timdim <- ncdim_def("year", "year", years)
+nc_dimension <- list(londim, latdim, timdim)
+
+# Define variables
+phu_def  <- ncvar_def(name="phu", units="degree days", dim=nc_dimension,
+                        longname = "Phenological Heat Unit Requirements",
+                        prec="single", compression = 6)
+
+# Create netCDF file and put arrays
+ncout <- nc_create(ncfname, list(phu_def,verbose = F))
+
+# Put variables
+ncvar_put(ncout, phu_def, phu.cube)
+
+# Put additional attributes into dimension and data variables
+ncatt_put(ncout,"lon","axis","X") #,verbose=FALSE) #,definemode=FALSE)
+ncatt_put(ncout,"lat","axis","Y")
+
+ncatt_put(ncout, 0, "Crop",
+          paste0(crop.ls[["ggcmi"]][cr], "_", irri.ls[[ir]]["ggcmi"]))
+ncatt_put(ncout, 0, "Institution",
+          "Potsdam Institute for Climate Impact Research (PIK), Germany")
+history <- paste("Sara Minoli", date(), sep=", ")
+ncatt_put(ncout, 0, "history", history)
+
+# Close the file, writing data to disk
+nc_close(ncout)
+
 
