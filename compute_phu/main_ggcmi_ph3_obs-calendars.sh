@@ -16,7 +16,7 @@ for gc in "${!gcms[@]}";do
         echo "GCM: ${gcms[gc]} --- SCENARIO: ${scens[sc]} --- CROP: ${crops[cr]}"
         echo "------------------------------------------------------------------"
 
-sbatch --qos=standby --ntasks=1 --cpus-per-task=4 -J nc_${gc}_${sc}_${cr}_${ir} -A macmit -t 01:00:00 --workdir=${wd} -o out_err/nc_${gc}_${sc}_${crops[cr]}_${ir}.out -e out_err/nc_${gc}_${sc}_${crops[cr]}_${cr}.err R -f main_ggcmi_ph3_obs-calendars.R --args "${gcms[gc]}" "${scens[sc]}" "${crops[cr]}" "${irrigs[ir]}"
+sbatch --qos=standby --ntasks=1 --cpus-per-task=6 -J nc_${gc}_${sc}_${cr}_${ir} -A macmit -t 01:00:00 --workdir=${wd} -o out_err/nc_${gc}_${sc}_${crops[cr]}_${ir}.out -e out_err/nc_${gc}_${sc}_${crops[cr]}_${cr}.err R -f main_ggcmi_ph3_obs-calendars.R --args "${gcms[gc]}" "${scens[sc]}" "${crops[cr]}" "${irrigs[ir]}"
 
       done
     done

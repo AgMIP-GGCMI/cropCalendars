@@ -4,7 +4,7 @@ wd=/home/minoli/crop_calendars_gitlab/ggcmi_ph3/compute_phu
 
 gcms=('UKESM1-0-LL')
 scens=('historical' 'ssp585' 'ssp370' 'ssp126')
-crops=('mai' 'ric' 'sor' 'soy' 'swh' 'wwh')
+crops=('mai' 'ri1' 'sor' 'soy' 'swh' 'wwh')
 irrigs=('rf' 'ir')
 
 
