@@ -11,6 +11,9 @@
 
 rm(list=ls(all=T))
 
+starttime <- Sys.time() # Track run-time
+print(starttime)
+
 library(ncdf4)
 library(data.table)
 library(ggplot2)
@@ -183,7 +186,7 @@ for (yy in 1:length(SYs)) {
                       tv1   = tv1,
                       tv2   = tv2,
                       tv3   = tv3,
-                      tv4   = tv4)
+                      tv4   = tv4)[["vrf"]]
     } else {
       
       vrf <- rep(1, 365)
@@ -259,4 +262,14 @@ ncatt_put(ncout, 0, "history", history)
 # Close the file, writing data to disk
 nc_close(ncout)
 
+
+# ------------------------------------------------------#
+
+cat("\n", paste("Computation PHUs ended!"),
+    "-------------------------------------------------------", sep = "\n")
+
+endtime <- Sys.time()
+print(endtime)
+
+print(endtime-starttime)
 
