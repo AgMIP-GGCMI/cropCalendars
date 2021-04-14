@@ -86,7 +86,7 @@ if (!dir.exists(ncdir)) dir.create(ncdir, recursive = T)
 # rb_cal = rule-based calendar, ggcmi = ggcmi ph3
 crop.ls <- list(all_low = c("maize", "rice", "sorghum", "soybean", "spring_wheat", "winter_wheat"),
                 rb_cal  = c("Maize", "Rice", "Sorghum", "Soybean", "Spring_Wheat", "Winter_Wheat"),
-                ggcmi   = c("mai", "ric", "sor", "soy", "swh", "wwh"))
+                ggcmi   = c("mai", "ri1", "sor", "soy", "swh", "wwh"))
 irri.ls <- list(all_low = c("rainfed", "irrigated"),
                 rb_cal  = c("Rainfed", "Irrigated"),
                 ggcmi   = c("rf", "ir"))
