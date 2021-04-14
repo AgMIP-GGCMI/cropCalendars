@@ -11,6 +11,7 @@
 
 rm(list=ls(all=T))
 
+library(ncdf4)
 
 # sowing date and harvest date input (also multiple years)
 read.crop.dates.input <- function(fname, ncells = NCELLS,
@@ -45,9 +46,7 @@ read.crop.dates.input <- function(fname, ncells = NCELLS,
   return(x)
 }
 
-# ----
-
-# Read pixel data from ggcmi_ph3 input data ####
+# Read pixel data from ggcmi_ph3 input data ----
 # As a reference to check my scripts compute phu right
 
 fpath <- paste0("/home/minoli/git_lpjmlToolKit/development/functions/")
@@ -56,7 +55,8 @@ invisible(lapply(fsources, source))
 cat("\nImporting functions:\n", "-----------------",
     list.files(fpath, pattern = ".R", recursive = T), sep = "\n")      
 
-
+# Paths ----
+project.dir <- "/p/projects/macmit/users/minoli/PROJECTS/GGCMI_ph3_adaptation/"
 ggcmi.dir <- "/p/projects/lpjml/input/crop_calendar/"
 
 grid.fn  <- "/p/projects/lpjml/input/historical/input_VERSION2/grid.bin"
@@ -77,3 +77,47 @@ sdate <- read.crop.dates.input(sdate.fn, 67420, ryear = 2000, fyear = 2000, lyea
 hdate <- read.crop.dates.input(hdate.fn, 67420, ryear = 2000, fyear = 2000, lyear = 2000, header = 43, nbands = 30, dtype = integer(), dsize = 2, scalar = 1)
 
 phu <- read.crop.dates.input(phu.fn, 67420, ryear = 2000, fyear = 2000, lyear = 2000, header = 43, nbands = 30, dtype = integer(), dsize = 2, scalar = 1)
+
+
+# Rule-based crop calendars ----
+
+# Get Crop Calendar: Sowing and Harvest Dates ----
+crop.ls <- list(all_low = c("maize", "rice", "sorghum", "soybean",
+                            "spring_wheat", "winter_wheat"),
+                rb_cal  = c("Maize", "Rice", "Sorghum", "Soybean",
+                            "Spring_Wheat", "Winter_Wheat"),
+                ggcmi   = c("mai", "ric", "sor", "soy", "swh", "wwh"),
+                vernal  = c("no",  "no",  "no",  "no",  "no",  "yes"))
+irri.ls <- list(all_low = c("rainfed", "irrigated"),
+                rb_cal  = c("Rainfed", "Irrigated"),
+                ggcmi   = c("rf", "ir"))
+
+
+GCM <- "UKESM1-0-LL"
+SC  <- "historical"
+CROP <- "mai"
+IRRI <- "rf"
+
+cr <- which(crop.ls[["ggcmi"]]==CROP)
+ir <- which(irri.ls[["ggcmi"]]==IRRI)
+
+ncdir <- paste0(project.dir, "crop_calendars/ncdf/", GCM, "/", SC, "/")
+fn <- ncfname <- paste0(ncdir,
+                        crop.ls[["ggcmi"]][cr], "_", irri.ls[["ggcmi"]][ir],
+                        "_", GCM, "_", SC, "_", 1984, "-", 2014,
+                        "_ggcmi_ph3_obs-calendars_phu.nc4")
+
+nc <- nc_open(fn)
+x <- ncvar_get(nc, "phu")
+lons <- ncvar_get(nc, "lon")
+lats <- ncvar_get(nc, "lat")
+nc_close(nc)
+
+pix <- 7200
+ilo <- which(lons==grid.in[pix,1])
+ila <- which(lats==grid.in[pix,2])
+
+x[ilo, ila]
+phu[pix,3]
+
+

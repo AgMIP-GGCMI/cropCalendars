@@ -26,7 +26,7 @@ library(zoo)       # for rolling mean
 options(echo=FALSE) # if want see commands in output file
 argr <- commandArgs(trailingOnly = TRUE)
 print(argr)
-# argr <- c("UKESM1-0-LL", "ssp585", "mai", "rf")
+# argr <- c("UKESM1-0-LL", "ssp585", "wwh", "rf")
 
 GCM    <- argr[1]
 SC     <- argr[2]
@@ -204,7 +204,7 @@ for (yy in 1:length(SYs)) {
                     basetemp    = basetemp,
                     phen_model  = "tv")
     
-    phu.annual[ilo, ila] <- phu
+    phu.annual[ilo, ila] <- as.integer(phu)
     
   } # i
   
@@ -220,6 +220,8 @@ save(phu.cube, file = paste0(working.dir, "compute_phu/tmp/",
                              crop.ls[["ggcmi"]][cr], "_", irri.ls[["ggcmi"]][ir],
                              "_", GCM, "_", SC, "_", min(SYs), "-", max(EYs),
                              "_ggcmi_ph3_rule_based_phu.Rdata"))
+
+
 
 # ------------------------------------------------------#
 # Write Crop-specific Output File ----
