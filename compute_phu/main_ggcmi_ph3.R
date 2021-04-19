@@ -142,9 +142,10 @@ for (yy in 1:length(SYs)) {
   # ------------------------------------------------------#
   # Get Sowing and Harvest dates
   nc <- nc_open(ncfname)
-  sdate <- ncvar_get(nc, varid = "plant-day", start = c(1,1,1),
+  sy    <- which(years==SYs[yy])
+  sdate <- ncvar_get(nc, varid = "plant-day", start = c(1,1,sy),
                      count = c(720, 360, length(SYs[yy]:EYs[yy])))
-  hdate <- ncvar_get(nc, varid = "maty-day",  start = c(1,1,1),
+  hdate <- ncvar_get(nc, varid = "maty-day",  start = c(1,1,sy),
                      count = c(720, 360, length(SYs[yy]:EYs[yy])))
   lons  <- ncvar_get(nc, varid = "lon")
   lats  <- ncvar_get(nc, varid = "lat")
