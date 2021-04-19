@@ -18,7 +18,7 @@ stime <- Sys.time()
 
 working.dir <- "/home/minoli/crop_calendars_gitlab/ggcmi_ph3/compute_sdate_hdate/"
 
-makeplot <- TRUE
+makeplot <- F
 
 # PACKAGES ----
 library(ncdf4)
@@ -42,7 +42,7 @@ source(paste0(working.dir, "postprocessing/ncdfs.R"))
 # import argument from bash script
 options(echo=FALSE) # if you want see commands in output file
 args <- commandArgs(trailingOnly = TRUE)
-# args <- c("Maize", "Rainfed", "UKESM1-0-LL", "historical")
+# args <- c("cas", "rf", "UKESM1-0-LL", "historical")
 print(args)
 
 CROP <- args[1]
@@ -83,10 +83,16 @@ ggdir <- "/p/projects/macmit/data/GGCMI/AgMIP.input/phase3/crop_calendar/"
 if (!dir.exists(ncdir)) dir.create(ncdir, recursive = T)
 
 # Crop Names: ----
-# rb_cal = rule-based calendar, ggcmi = ggcmi ph3
-crop.ls <- list(all_low = c("maize", "rice", "sorghum", "soybean", "spring_wheat", "winter_wheat"),
-                rb_cal  = c("Maize", "Rice", "Sorghum", "Soybean", "Spring_Wheat", "Winter_Wheat"),
-                ggcmi   = c("mai", "ri1", "sor", "soy", "swh", "wwh"))
+crop.ls <- list(all_low = c("winter_wheat", "spring_wheat", "maize", "rice1", "rice2",
+                            "soybean", "millet", "sorghum","peas","sugar_beat",
+                            "cassava","rape_seed","sunflower","nuts","sugarcane"),
+                rb_cal  = c("Winter_Wheat", "Spring_Wheat", "Maize", "Rice", NA,
+                            "Soybean", NA, "Sorghum", NA, NA,
+                            NA, NA, NA, NA, NA),
+                ggcmi   = c("wwh","swh","mai","ri1","ri2",
+                            "soy","mil","sor","pea","sgb",
+                            "cas","rap","sun","nut","sgc"))
+
 irri.ls <- list(all_low = c("rainfed", "irrigated"),
                 rb_cal  = c("Rainfed", "Irrigated"),
                 ggcmi   = c("rf", "ir"))
@@ -105,11 +111,10 @@ str(AR)
 # Read DT crop calendar and fill-in array ----
 # ------------------------------------------------------#
 
-cr <- which(crop.ls[["rb_cal"]]==CROP) # crop index
-ir <- which(irri.ls[["rb_cal"]]==IRRI) # irrigation index
-cat("\n------------------\n", CROP, "\t", IRRI, "\n------------------\n")
+cr <- which(crop.ls[["ggcmi"]]==CROP) # crop index
+ir <- which(irri.ls[["ggcmi"]]==IRRI) # irrigation index
+cat("\n--------------\n", CROP, "---", IRRI, "\n--------------\n")
 
-#tt <- 1
 
 # Get GGCMI phase 3 sowing and harvest dates (to replace default dates) ----
 # ------------------------------------------------------#
@@ -129,15 +134,41 @@ ARdd <- AR # default sdate
 # Loop through time-slice-specific DT and fill in arrays
 # ------------------------------------------------------#
 for (tt in 1:length(SYs)) { # time-slice index
-  
+  #tt <- 1
   iyears <- which(years==SYs[tt]):which(years==EYs[tt])
   cat("Doing", years[iyears], "\n")
   
-  # Crop calendar DT.Rdata file
-  fname <- paste0(paste0(output.dir, HYs[tt], "/"),
-                  "DT_output_crop_calendars_", CROP, "_", GCM,
-                  "_", HYs[tt], "_", FYs[tt], "_", LYs[tt], ".Rdata")
-  DT <- get(load(fname))[irrigation==irri.ls[["rb_cal"]][ir]] # subset irrig
+  if (!is.na(crop.ls[["rb_cal"]][cr])) {
+    
+    # Crop calendar DT.Rdata file
+    fname <- paste0(paste0(output.dir, HYs[tt], "/"),
+                    "DT_output_crop_calendars_", crop.ls[["rb_cal"]][cr],
+                    "_", GCM, "_", HYs[tt], "_", FYs[tt], "_", LYs[tt], ".Rdata")
+    DT <- get(load(fname))[irrigation==irri.ls[["rb_cal"]][ir]] # subset irrig
+    
+  } else {
+
+    # Create a DT template for crops that aren't simulated by the rule-based
+    #  approach and for which we assume GGCMI ph2 approach (regain original GS)
+    #   Take crop calendar DT.Rdata file of crop 1
+    fname <- paste0(paste0(output.dir, HYs[1], "/"),
+                    "DT_output_crop_calendars_", crop.ls[["rb_cal"]][1],
+                    "_", GCM, "_", HYs[1], "_", FYs[1], "_", LYs[1], ".Rdata")
+    DT <- get(load(fname))[irrigation==irri.ls[["rb_cal"]][ir]] # subset irrig
+    
+    # Replace all values with dummy number, except sowing_month set to default 
+    DT$crop             <- crop.ls[["all_low"]][cr]
+    DT$seasonality_type <- ""
+    DT$sowing_season    <- ""
+    DT$sowing_month     <- 0 # default, so all will be replaced with ggcmi dates
+    DT$sowing_doy       <- 0
+    DT$harvest_rule     <- ""
+    DT$harvest_reason   <- ""
+    DT$maturity_doy     <- 0
+    DT$growing_period   <- 0
+    
+  }
+
   print(dim(DT))
   
   # Loop through pixels and extract values from crop calendar DT
