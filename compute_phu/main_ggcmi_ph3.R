@@ -26,7 +26,7 @@ library(zoo)       # for rolling mean
 options(echo=FALSE) # if want see commands in output file
 argr <- commandArgs(trailingOnly = TRUE)
 print(argr)
-# argr <- c("UKESM1-0-LL", "ssp585", "wwh", "rf")
+# argr <- c("UKESM1-0-LL", "ssp585", "ri2", "rf")
 
 GCM    <- argr[1]
 SC     <- argr[2]
@@ -160,6 +160,10 @@ for (yy in 1:length(SYs)) {
     
     sdate.avg <- as.integer(mean(sdate[ilo, ila, ]))
     hdate.avg <- as.integer(mean(hdate[ilo, ila, ]))
+    
+    # Ric2 has missing values: make an artificial 1 day growing period
+    sdate.avg <- ifelse(is.na(sdate.avg), 1, sdate.avg)
+    hdate.avg <- ifelse(is.na(hdate.avg), 2, hdate.avg)
     
     dtemp <- tas_mean_day[i,]
     
