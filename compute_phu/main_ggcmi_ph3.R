@@ -93,7 +93,10 @@ crop.ls <- list(all_low = c("winter_wheat", "spring_wheat", "maize", "rice1", "r
                             NA, NA, NA, NA, NA),
                 ggcmi   = c("wwh","swh","mai","ri1","ri2",
                             "soy","mil","sor","pea","sgb",
-                            "cas","rap","sun","nut","sgc"))
+                            "cas","rap","sun","nut","sgc"),
+                vernal  = c("yes","no","no","no","no",
+                            "no","no","no","no","no",
+                            "no","yes","no","no","no"))
 
 irri.ls <- list(all_low = c("rainfed", "irrigated"),
                 rb_cal  = c("Rainfed", "Irrigated"),
