@@ -84,16 +84,21 @@ grid <- as.data.frame(read.lpjml.grid(
 
 
 # ------------------------------------------------------#
-# Get Crop Calendar: Sowing and Harvest Dates ----
-crop.ls <- list(all_low = c("maize", "rice", "sorghum", "soybean",
-                            "spring_wheat", "winter_wheat"),
-                rb_cal  = c("Maize", "Rice", "Sorghum", "Soybean",
-                            "Spring_Wheat", "Winter_Wheat"),
-                ggcmi   = c("mai", "ri1", "sor", "soy", "swh", "wwh"),
-                vernal  = c("no",  "no",  "no",  "no",  "no",  "yes"))
+# Crop Names: ----
+crop.ls <- list(all_low = c("winter_wheat", "spring_wheat", "maize", "rice1", "rice2",
+                            "soybean", "millet", "sorghum","peas","sugar_beat",
+                            "cassava","rape_seed","sunflower","nuts","sugarcane"),
+                rb_cal  = c("Winter_Wheat", "Spring_Wheat", "Maize", "Rice", NA,
+                            "Soybean", NA, "Sorghum", NA, NA,
+                            NA, NA, NA, NA, NA),
+                ggcmi   = c("wwh","swh","mai","ri1","ri2",
+                            "soy","mil","sor","pea","sgb",
+                            "cas","rap","sun","nut","sgc"))
+
 irri.ls <- list(all_low = c("rainfed", "irrigated"),
                 rb_cal  = c("Rainfed", "Irrigated"),
                 ggcmi   = c("rf", "ir"))
+
 
 cr <- which(crop.ls[["ggcmi"]]==CROP)
 ir <- which(irri.ls[["ggcmi"]]==IRRI)

@@ -4,7 +4,7 @@ wd=/home/minoli/crop_calendars_gitlab/ggcmi_ph3/compute_phu
 
 gcms=('UKESM1-0-LL')
 scens=('historical' 'ssp585' 'ssp370' 'ssp126')
-crops=('mai' 'ri1' 'sor' 'soy' 'swh' 'wwh')
+crops=('wwh' 'swh' 'mai' 'ri1' 'ri2' 'soy' 'mil' 'sor' 'pea' 'sgb' 'cas' 'rap' 'sun' 'nut' 'sgc')
 irrigs=('rf' 'ir')
 
 
@@ -12,7 +12,7 @@ for gc in "${!gcms[@]}";do
   for sc in "${!scens[@]}";do
     for cr in "${!crops[@]}";do
       for ir in "${!irrigs[@]}";do
-        
+
         echo "GCM: ${gcms[gc]} --- SCENARIO: ${scens[sc]} --- CROP: ${crops[cr]}"
         echo "------------------------------------------------------------------"
 
@@ -22,4 +22,3 @@ sbatch --qos=standby --ntasks=1 --cpus-per-task=4 -J nc_${gc}_${sc}_${cr}_${ir} 
     done
   done
 done
-
