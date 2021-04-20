@@ -183,10 +183,14 @@ for (yy in 1:length(SYs)) {
     # Test if it is winter crop ----
     if (crop.ls[["vernal"]][cr] == "yes") {
       
-    wcrop <- wintercrop(start = sdate.avg,
-                        end   = hdate.avg,
-                        tcm    = min(mtemp),
-                        lat   = grid$lat[i])
+      wcrop <- wintercrop(start = sdate.avg,
+                          end   = hdate.avg,
+                          tcm    = min(mtemp),
+                          lat   = grid$lat[i])
+    } else {
+      
+      wcrop <- 0
+      
     }
     
     # ------------------------------------------------------#
@@ -217,7 +221,7 @@ for (yy in 1:length(SYs)) {
       vrf <- rep(1, 365)
       
     }
-
+    
     
     # ------------------------------------------------------#
     # Calculate Phenological Heat Unit Requirements ----
@@ -266,8 +270,8 @@ nc_dimension <- list(londim, latdim, timdim)
 
 # Define variables
 phu_def  <- ncvar_def(name="phu", units="degree days", dim=nc_dimension,
-                        longname = "Phenological Heat Unit Requirements",
-                        prec="single", compression = 6)
+                      longname = "Phenological Heat Unit Requirements",
+                      prec="single", compression = 6)
 
 # Create netCDF file and put arrays
 ncout <- nc_create(ncfname, list(phu_def), verbose = F)
