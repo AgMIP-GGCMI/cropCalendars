@@ -53,7 +53,21 @@ calc.phu <- function(sdate = NA, # sowing date (DOY)
   } # phen_model
   
   # Total Thermal Unit Requirements
-  husum <- sum(teff)
+  if (phen_model == "t") {
+    
+    husum <- as.integer(sum(teff))
+    
+  } else if (phen_model == "tv") {
+    
+    # negative phus are recognized by lpjml as requiring vernalization
+    husum <- as.integer(sum(teff))*(-1L)
+    
+  } else {
+    
+    cat ("\nError: phen_model not declared!")
+    stop()
+    
+  }
   
   return(husum)
   

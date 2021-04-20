@@ -153,20 +153,28 @@ for (yy in 1:length(years)) {
   
 } # yy
 
+save(list = list(hsd, xhd, xph),
+     file = paste0(working.dir, "compute_phu/tmp/",
+                   "lpjml_array_", GCM, "_", SC, "_", SY, "-", EY,
+                   "_ggcmi_ph3_rule_based_list_sdate_hdate_phu.Rdata"))
 
 # ------------------------------------------------------#
 # Write binary input files for LPJmL ----
+
+cat("\nWriting clm files ...\n-------\n")
 
 # sdate ----
 y <- NULL
 for (j in 1:NYEARS) {
   y <- c(y, c(t(xsd[,,j])))
 }
-fwriteheader2()
+
 FNAME.SD <- paste0(clmdir, "sdate_", GCM, "_", SC, "_", SY, "_", EY,
                    "_ggcmi_ph3_rule_based_crop_calendar.clm2")
 sdfile <- file(FNAME.SD, "wb")
-fwriteheader2(sdfile, "LPJSOWD", 2, NBANDS, SY, NYEARS, NCELLS, scalar = 1)
+fwriteheader2(file.out = sdfile, headername = "LPJSOWD", version = 2,
+              bands = NBANDS, firstyear = SY, nyears = NYEARS,
+              ncells = NCELLS, resolution = 0.5, scalar = 1)
 writeBin(as.integer(y/SCALAR), sdfile, size=2, endian=.Platform$endian)
 close(sdfile)
 
@@ -181,7 +189,9 @@ for (j in 1:NYEARS) {
 FNAME.HD <- paste0(clmdir, "hdate_", GCM, "_", SC, "_", SY, "_", EY,
                    "_ggcmi_ph3_rule_based_crop_calendar.clm2")
 hdfile <- file(FNAME.HD, "wb")
-fwriteheader2(hdfile, "LPJSOWD", 2, NBANDS, SY, NYEARS, NCELLS, scalar = 1)
+fwriteheader2(file.out = hdfile, headername = "LPJSOWD", version = 2,
+              bands = NBANDS, firstyear = SY, nyears = NYEARS,
+              ncells = NCELLS, resolution = 0.5, scalar = 1)
 writeBin(as.integer(y/SCALAR), hdfile, size=2, endian=.Platform$endian)
 close(hdfile)
 
@@ -193,10 +203,12 @@ for (j in 1:NYEARS) {
   y <- c(y, c(t(xph[,,j])))
 }
 
-FNAME.HD <- paste0(clmdir, "phu_", GCM, "_", SC, "_", SY, "_", EY,
+FNAME.HU <- paste0(clmdir, "phu_", GCM, "_", SC, "_", SY, "_", EY,
                    "_ggcmi_ph3_rule_based_crop_calendar.clm2")
-hdfile <- file(FNAME.HD, "wb")
-fwriteheader2(hdfile, "LPJmLHU", 2, NBANDS, SY, NYEARS, NCELLS,scalar = 1)
+hufile <- file(FNAME.HU, "wb")
+fwriteheader2(file.out = hufile, headername = "LPJmLHU", version = 2,
+              bands = NBANDS, firstyear = SY, nyears = NYEARS,
+              ncells = NCELLS, resolution = 0.5, scalar = 1)
 writeBin(as.integer(y/SCALAR), hdfile, size=2, endian=.Platform$endian)
 close(hdfile)
 
