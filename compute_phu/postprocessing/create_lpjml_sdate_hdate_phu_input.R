@@ -162,11 +162,11 @@ y <- NULL
 for (j in 1:NYEARS) {
   y <- c(y, c(t(xsd[,,j])))
 }
-
+fwriteheader2()
 FNAME.SD <- paste0(clmdir, "sdate_", GCM, "_", SC, "_", SY, "_", EY,
-                   "_ggcmi_ph3_rule_based_crop_calendar.clm")
+                   "_ggcmi_ph3_rule_based_crop_calendar.clm2")
 sdfile <- file(FNAME.SD, "wb")
-fwriteheader(sdfile, "LPJSOWD", 2, NBANDS, SY, NYEARS, NCELLS, 1)
+fwriteheader2(sdfile, "LPJSOWD", 2, NBANDS, SY, NYEARS, NCELLS, scalar = 1)
 writeBin(as.integer(y/SCALAR), sdfile, size=2, endian=.Platform$endian)
 close(sdfile)
 
@@ -179,9 +179,9 @@ for (j in 1:NYEARS) {
 }
 
 FNAME.HD <- paste0(clmdir, "hdate_", GCM, "_", SC, "_", SY, "_", EY,
-                   "_ggcmi_ph3_rule_based_crop_calendar.clm")
+                   "_ggcmi_ph3_rule_based_crop_calendar.clm2")
 hdfile <- file(FNAME.HD, "wb")
-fwriteheader(hdfile, "LPJSOWD", 2, NBANDS, SY, NYEARS, NCELLS, 1)
+fwriteheader2(hdfile, "LPJSOWD", 2, NBANDS, SY, NYEARS, NCELLS, scalar = 1)
 writeBin(as.integer(y/SCALAR), hdfile, size=2, endian=.Platform$endian)
 close(hdfile)
 
@@ -194,9 +194,9 @@ for (j in 1:NYEARS) {
 }
 
 FNAME.HD <- paste0(clmdir, "phu_", GCM, "_", SC, "_", SY, "_", EY,
-                   "_ggcmi_ph3_rule_based_crop_calendar.clm")
+                   "_ggcmi_ph3_rule_based_crop_calendar.clm2")
 hdfile <- file(FNAME.HD, "wb")
-fwriteheader(hdfile, "LPJmLHU", 2, NBANDS, SY, NYEARS, NCELLS, 1)
+fwriteheader2(hdfile, "LPJmLHU", 2, NBANDS, SY, NYEARS, NCELLS,scalar = 1)
 writeBin(as.integer(y/SCALAR), hdfile, size=2, endian=.Platform$endian)
 close(hdfile)
 
