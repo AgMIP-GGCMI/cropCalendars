@@ -183,3 +183,19 @@ for (i in which(ggcmi.crops%in%crop.ls[["ggcmi"]])) {
 # gdf <- data.frame(lon=grid.in[,1], lat=grid.in[,2])
 # subset(gdf, lon==-100.25 & lat==60.25)
 # pix <- 7236
+
+
+# ------------------------------------------------------#
+# Binary files from rule-based approach ----
+
+fn <- "/p/projects/macmit/users/minoli/PROJECTS/GGCMI_ph3_adaptation/crop_calendars/clm/UKESM1-0-LL/historical/sdate_UKESM1-0-LL_historical_1991_2014_ggcmi_ph3_rule_based_crop_calendar.clm2"
+sdate <- read.crop.dates.input(fn, 67420, ryear = 1991, fyear = 1991, lyear = 1992, header = 43, nbands = 30, dtype = integer(), dsize = 2, scalar = 1)
+
+fn <- "/p/projects/macmit/users/minoli/PROJECTS/GGCMI_ph3_adaptation/crop_calendars/clm/UKESM1-0-LL/historical/hdate_UKESM1-0-LL_historical_1991_2014_ggcmi_ph3_rule_based_crop_calendar.clm2"
+hdate <- read.crop.dates.input(fn, 67420, ryear = 1991, fyear = 1991, lyear = 1992, header = 43, nbands = 30, dtype = integer(), dsize = 2, scalar = 1)
+
+fn <- "/p/projects/macmit/users/minoli/PROJECTS/GGCMI_ph3_adaptation/crop_calendars/clm/UKESM1-0-LL/historical/phu_UKESM1-0-LL_historical_1991_2014_ggcmi_ph3_rule_based_crop_calendar.clm2"
+phu <- read.crop.dates.input(fn, 67420, ryear = 1991, fyear = 1991, lyear = 2014, header = 43, nbands = 30, dtype = integer(), dsize = 2, scalar = 1)
+
+plot(phu[7200,1,], type = "l")
+
