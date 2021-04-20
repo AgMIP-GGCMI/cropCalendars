@@ -97,43 +97,45 @@ xph <- array(0, dim = c(NCELLS, NBANDS, NYEARS))
 for (yy in 1:length(years)) {
   #yy <- 1
   cat("\nYear", years[yy], "\n")
-   
-  for (i in 1:NCELLS) {
-    #i <- 1
-    if(i%%1e3==0) cat(i, "\t")
+  
+  for (bb in 1:NBANDS) {
+    # yy <- 1; i <- 1; bb <- 1
+    cat("\nBand", bands[bb], "--", irris[bb], "\n")
     
-    for (bb in 1:NBANDS) {
-      # yy <- 1; i <- 1; bb <- 1
-      
-      cr <- which(crop.ls[["ggcmi"]]==bands[bb])
-      ir <- which(irri.ls[["ggcmi"]]==irris[bb])
-      
-      # --------------------------# 
-      nc1 <- paste0(ncdir_rbcal,
-                        crop.ls[["ggcmi"]][cr], "_", irri.ls[["ggcmi"]][ir],
-                        "_", GCM, "_", SC, "_", syear, "-", eyear,
-                        "_ggcmi_ph3_rule_based_crop_calendar.nc4")
-      
-      nc <- nc_open(nc1)
-      sdate <- ncvar_get(nc, varid = "plant-day", start = c(1, 1, yy),
-                         count = c(720, 360, 1))
-      hdate <- ncvar_get(nc, varid = "maty-day",  start = c(1, 1, yy),
-                         count = c(720, 360, 1))
-      lons  <- ncvar_get(nc, varid = "lon")
-      lats  <- ncvar_get(nc, varid = "lat")
-      nc_close(nc)
-      
-      # --------------------------# 
-      nc2 <- paste0(ncdir_rbcal,
-                    crop.ls[["ggcmi"]][cr], "_", irri.ls[["ggcmi"]][ir],
-                    "_", GCM, "_", SC, "_", syear, "-", eyear,
-                    "_ggcmi_ph3_rule_based_phu.nc4")
-      
-      nc <- nc_open(nc2)
-      phu   <- ncvar_get(nc, varid = "phu",  start = c(1, 1, yy),
-                         count = c(720, 360, 1))
-      nc_close(nc)
-      
+    cr <- which(crop.ls[["ggcmi"]]==bands[bb])
+    ir <- which(irri.ls[["ggcmi"]]==irris[bb])
+    
+    # --------------------------# 
+    nc1 <- paste0(ncdir_rbcal,
+                  crop.ls[["ggcmi"]][cr], "_", irri.ls[["ggcmi"]][ir],
+                  "_", GCM, "_", SC, "_", syear, "-", eyear,
+                  "_ggcmi_ph3_rule_based_crop_calendar.nc4")
+    
+    nc <- nc_open(nc1)
+    sdate <- ncvar_get(nc, varid = "plant-day", start = c(1, 1, yy),
+                       count = c(720, 360, 1))
+    hdate <- ncvar_get(nc, varid = "maty-day",  start = c(1, 1, yy),
+                       count = c(720, 360, 1))
+    lons  <- ncvar_get(nc, varid = "lon")
+    lats  <- ncvar_get(nc, varid = "lat")
+    nc_close(nc)
+    
+    # --------------------------# 
+    nc2 <- paste0(ncdir_rbcal,
+                  crop.ls[["ggcmi"]][cr], "_", irri.ls[["ggcmi"]][ir],
+                  "_", GCM, "_", SC, "_", syear, "-", eyear,
+                  "_ggcmi_ph3_rule_based_phu.nc4")
+    
+    nc <- nc_open(nc2)
+    phu   <- ncvar_get(nc, varid = "phu",  start = c(1, 1, yy),
+                       count = c(720, 360, 1))
+    nc_close(nc)
+    
+    # --------------------------# 
+    
+    for (i in 1:NCELLS) {
+      #i <- 1
+      if(i%%1e3==0) cat(i, "\t")
       
       # --------------------------# 
       
@@ -147,9 +149,9 @@ for (yy in 1:length(years)) {
       xph[i, bb ,yy] <-   phu[ilo, ila]
       
       
-    } # bb
+    } # i
     
-  } # i
+  } # bb
   
 } # yy
 
