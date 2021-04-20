@@ -191,7 +191,7 @@ for (yy in 1:length(SYs)) {
     
     # ------------------------------------------------------#
     # If Vernal-crop:
-    if (crop.ls[["vernal"]][cr] %in% c("yes", "yes_all")) {
+    if (crop.ls[["vernal"]][cr] == "yes_all" | wcrop == 1) {
       
       # Calculate Vernalization Requirements ----
       vd <- calc.vd(temp_mean_month  = mtemp,
