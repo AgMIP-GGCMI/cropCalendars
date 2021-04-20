@@ -157,7 +157,9 @@ for (yy in 1:length(years)) {
 
 
 # ------------------------------------------------------#
+# Write binary input files for LPJmL ----
 
+# sdate ----
 y <- NULL
 for (j in 1:NYEARS) {
   y <- c(y, c(t(xsd[,,j])))
@@ -166,11 +168,12 @@ for (j in 1:NYEARS) {
 FNAME.SD <- paste0(clmdir,"sdate_",GCM, "_", SC, "_", syear, "_", eyear,
                    "_ggcmi_ph3_rule_based_crop_calendar.clm")
 sdfile <- file(FNAME.SD, "wb")
-fwriteheader(sdfile, "LPJSOWD", 2, NBANDS, FYEAR, NYEARS, NCELLS, SCALAR)
+fwriteheader(sdfile, "LPJSOWD", 2, NBANDS, syear, NYEARS, NCELLS, 1)
 writeBin(as.integer(y/SCALAR), sdfile, size=2, endian=.Platform$endian)
 close(sdfile)
 
 # --------------------------# 
+# hdate ----
 
 y <- NULL
 for (j in 1:NYEARS) {
@@ -180,11 +183,12 @@ for (j in 1:NYEARS) {
 FNAME.HD <- paste0(clmdir,"hdate_",GCM, "_", SC, "_", syear, "_", eyear,
                    "_ggcmi_ph3_rule_based_crop_calendar.clm")
 hdfile <- file(FNAME.HD, "wb")
-fwriteheader(hdfile, "LPJSOWD", 2, NBANDS, FYEAR, NYEARS, NCELLS, SCALAR)
+fwriteheader(hdfile, "LPJSOWD", 2, NBANDS, syear, NYEARS, NCELLS, 1)
 writeBin(as.integer(y/SCALAR), hdfile, size=2, endian=.Platform$endian)
 close(hdfile)
 
 # --------------------------# 
+# phu ----
 
 y <- NULL
 for (j in 1:NYEARS) {
@@ -194,7 +198,7 @@ for (j in 1:NYEARS) {
 FNAME.HD <- paste0(clmdir,"phu_",GCM, "_", SC, "_", syear, "_", eyear,
                    "_ggcmi_ph3_rule_based_crop_calendar.clm")
 hdfile <- file(FNAME.HD, "wb")
-fwriteheader(hdfile, "LPJSOWD", 2, NBANDS, FYEAR, NYEARS, NCELLS, SCALAR)
+fwriteheader(hdfile, "LPJmLHU", 2, NBANDS, syear, NYEARS, NCELLS, 1)
 writeBin(as.integer(y/SCALAR), hdfile, size=2, endian=.Platform$endian)
 close(hdfile)
 
