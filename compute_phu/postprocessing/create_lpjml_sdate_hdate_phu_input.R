@@ -24,8 +24,6 @@ print(argr)
 
 GCM    <- argr[1]
 SC     <- argr[2]
-# CROP   <- argr[3]
-# IRRI   <- argr[4]
 
 if (SC == "historical") {
   SY <- 1991
@@ -165,7 +163,7 @@ for (j in 1:NYEARS) {
   y <- c(y, c(t(xsd[,,j])))
 }
 
-FNAME.SD <- paste0(clmdir,"sdate_",GCM, "_", SC, "_", SY, "_", EY,
+FNAME.SD <- paste0(clmdir, "sdate_", GCM, "_", SC, "_", SY, "_", EY,
                    "_ggcmi_ph3_rule_based_crop_calendar.clm")
 sdfile <- file(FNAME.SD, "wb")
 fwriteheader(sdfile, "LPJSOWD", 2, NBANDS, SY, NYEARS, NCELLS, 1)
@@ -180,7 +178,7 @@ for (j in 1:NYEARS) {
   y <- c(y, c(t(xhd[,,j])))
 }
 
-FNAME.HD <- paste0(clmdir,"hdate_",GCM, "_", SC, "_", SY, "_", EY,
+FNAME.HD <- paste0(clmdir, "hdate_", GCM, "_", SC, "_", SY, "_", EY,
                    "_ggcmi_ph3_rule_based_crop_calendar.clm")
 hdfile <- file(FNAME.HD, "wb")
 fwriteheader(hdfile, "LPJSOWD", 2, NBANDS, SY, NYEARS, NCELLS, 1)
@@ -195,55 +193,10 @@ for (j in 1:NYEARS) {
   y <- c(y, c(t(xph[,,j])))
 }
 
-FNAME.HD <- paste0(clmdir,"phu_",GCM, "_", SC, "_", SY, "_", EY,
+FNAME.HD <- paste0(clmdir, "phu_", GCM, "_", SC, "_", SY, "_", EY,
                    "_ggcmi_ph3_rule_based_crop_calendar.clm")
 hdfile <- file(FNAME.HD, "wb")
 fwriteheader(hdfile, "LPJmLHU", 2, NBANDS, SY, NYEARS, NCELLS, 1)
 writeBin(as.integer(y/SCALAR), hdfile, size=2, endian=.Platform$endian)
 close(hdfile)
 
-
-
-
-
-
-# 
-# #--- OLD ---#
-# 
-# xsd <- array(default_sdate, dim = c(NCELLS, NBANDS, NYEARS))
-# xhd <- array(default_hdate, dim = c(NCELLS, NBANDS, NYEARS))
-# for (j in 1:NYEARS) {
-#   for (i in bands) {
-#     
-#     DTcft <- DT[crop==cfts[i] & irrigation==irrs[i], c("pixelnr", "sowing_doy", "maturity_doy"), with=F]
-#     DTcft <- DTcft[order(pixelnr)]
-#     print(dim(DTcft))
-#     xsd[,i,j] <-  DTcft[["sowing_doy"]]
-#     xhd[,i,j] <-  DTcft[["maturity_doy"]]
-#     
-#   } # i
-# } #j
-# 
-# y <- NULL
-# for (j in 1:NYEARS) {
-#   y <- c(y, c(t(xsd[,,j])))
-# }
-# 
-# FNAME.SD <- paste0(cropcal.dir,"sdate_",GCM, "_", SCgp, "_", SYgp, "_", EYgp,".bin")
-# sdfile <- file(FNAME.SD, "wb")
-# fwriteheader(sdfile, "LPJSOWD", 2, NBANDS, FYEAR, NYEARS, NCELLS, SCALAR)
-# writeBin(as.integer(y/SCALAR), sdfile, size=2, endian=.Platform$endian)
-# close(sdfile)
-# 
-# 
-# y <- NULL
-# for (j in 1:NYEARS) {
-#   y <- c(y, c(t(xhd[,,j])))
-# }
-# 
-# FNAME.HD <- paste0(cropcal.dir,"hdate_",GCM, "_", SCgp, "_", SYgp, "_", EYgp,".bin")
-# hdfile <- file(FNAME.HD, "wb")
-# fwriteheader(hdfile, "LPJSOWD", 2, NBANDS, FYEAR, NYEARS, NCELLS, SCALAR)
-# writeBin(as.integer(y/SCALAR), hdfile, size=2, endian=.Platform$endian)
-# close(hdfile)
-# 
