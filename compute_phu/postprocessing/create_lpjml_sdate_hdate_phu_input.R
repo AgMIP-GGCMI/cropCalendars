@@ -153,7 +153,7 @@ for (yy in 1:length(years)) {
   
 } # yy
 
-save(list = list(hsd, xhd, xph),
+save(list = list(xsd, xhd, xph),
      file = paste0(working.dir, "compute_phu/tmp/",
                    "lpjml_array_", GCM, "_", SC, "_", SY, "-", EY,
                    "_ggcmi_ph3_rule_based_list_sdate_hdate_phu.Rdata"))

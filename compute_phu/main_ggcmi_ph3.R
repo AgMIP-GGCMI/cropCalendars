@@ -94,7 +94,9 @@ crop.ls <- list(all_low = c("winter_wheat", "spring_wheat", "maize", "rice1", "r
                 ggcmi   = c("wwh","swh","mai","ri1","ri2",
                             "soy","mil","sor","pea","sgb",
                             "cas","rap","sun","nut","sgc"),
-                vernal  = c("yes","no","no","no","no",
+                # vernal: yes_all = vern. forced in all grid cells;
+                #         yes = only if conditions are met, see wintercrop() 
+                vernal  = c("yes_all","no","no","no","no",
                             "no","no","no","no","no",
                             "no","yes","no","no","no"))
 
@@ -178,8 +180,18 @@ for (yy in 1:length(SYs)) {
     }
     
     # ------------------------------------------------------#
-    # If Vernal-crop:
+    # Test if it is winter crop ----
     if (crop.ls[["vernal"]][cr] == "yes") {
+      
+    wcrop <- wintercrop(start = sdate.avg,
+                        end   = hdate.avg,
+                        tcm    = min(mtemp),
+                        lat   = grid$lat[i])
+    }
+    
+    # ------------------------------------------------------#
+    # If Vernal-crop:
+    if (crop.ls[["vernal"]][cr] %in% c("yes", "yes_all")) {
       
       # Calculate Vernalization Requirements ----
       vd <- calc.vd(temp_mean_month  = mtemp,
