@@ -96,7 +96,7 @@ xph <- array(0, dim = c(NCELLS, NBANDS, NYEARS))
 
 for (yy in 1:length(years)) {
   #yy <- 1
-  cat("\nYear", years[yy], "\n")
+  cat("\nYear", years[yy], "\n", "-------------------------------\n")
   
   for (bb in 1:NBANDS) {
     # yy <- 1; i <- 1; bb <- 1
@@ -135,7 +135,7 @@ for (yy in 1:length(years)) {
     
     for (i in 1:NCELLS) {
       #i <- 1
-      if(i%%1e3==0) cat(i, "\t")
+      if(i%%1e4==0) cat(i, "\t")
       
       # --------------------------# 
       
