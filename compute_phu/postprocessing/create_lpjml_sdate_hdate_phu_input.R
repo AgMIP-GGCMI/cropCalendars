@@ -163,6 +163,8 @@ for (yy in 1:length(years)) {
 
 cat("\nWriting clm files ...\n-------\n")
 
+SCALAR <- 1
+
 # sdate ----
 y <- NULL
 for (j in 1:NYEARS) {
@@ -174,7 +176,7 @@ FNAME.SD <- paste0(clmdir, "sdate_", GCM, "_", SC, "_", SY, "_", EY,
 sdfile <- file(FNAME.SD, "wb")
 fwriteheader2(file.out = sdfile, headername = "LPJSOWD", version = 2,
               bands = NBANDS, firstyear = SY, nyears = NYEARS,
-              ncells = NCELLS, resolution = 0.5, scalar = 1)
+              ncells = NCELLS, resolution = 0.5, scalar = SCALAR)
 writeBin(as.integer(y/SCALAR), sdfile, size=2, endian=.Platform$endian)
 close(sdfile)
 
@@ -191,7 +193,7 @@ FNAME.HD <- paste0(clmdir, "hdate_", GCM, "_", SC, "_", SY, "_", EY,
 hdfile <- file(FNAME.HD, "wb")
 fwriteheader2(file.out = hdfile, headername = "LPJSOWD", version = 2,
               bands = NBANDS, firstyear = SY, nyears = NYEARS,
-              ncells = NCELLS, resolution = 0.5, scalar = 1)
+              ncells = NCELLS, resolution = 0.5, scalar = SCALAR)
 writeBin(as.integer(y/SCALAR), hdfile, size=2, endian=.Platform$endian)
 close(hdfile)
 
@@ -208,7 +210,7 @@ FNAME.HU <- paste0(clmdir, "phu_", GCM, "_", SC, "_", SY, "_", EY,
 hufile <- file(FNAME.HU, "wb")
 fwriteheader2(file.out = hufile, headername = "LPJmLHU", version = 2,
               bands = NBANDS, firstyear = SY, nyears = NYEARS,
-              ncells = NCELLS, resolution = 0.5, scalar = 1)
+              ncells = NCELLS, resolution = 0.5, scalar = SCALAR)
 writeBin(as.integer(y/SCALAR), hdfile, size=2, endian=.Platform$endian)
 close(hdfile)
 
