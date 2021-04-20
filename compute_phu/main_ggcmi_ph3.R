@@ -226,14 +226,31 @@ for (yy in 1:length(SYs)) {
     # ------------------------------------------------------#
     # Calculate Phenological Heat Unit Requirements ----
     
-    phu <- calc.phu(sdate       = sdate.avg,
-                    hdate       = hdate.avg,
-                    mdt         = dtemp,
-                    vern_factor = vrf,
-                    basetemp    = basetemp,
-                    phen_model  = "tv")
-    
-    phu.annual[ilo, ila] <- as.integer(phu)
+    # If Vernal-crop use vernal-thermal model and return negative phu
+    if (crop.ls[["vernal"]][cr] == "yes_all" | wcrop == 1) {
+      
+      phu <- calc.phu(sdate       = sdate.avg,
+                      hdate       = hdate.avg,
+                      mdt         = dtemp,
+                      vern_factor = vrf,
+                      basetemp    = basetemp,
+                      phen_model  = "tv")
+      
+      phu.annual[ilo, ila] <- as.integer(phu)
+      
+    # else use Thermal model  
+    } else {
+      
+      phu <- calc.phu(sdate       = sdate.avg,
+                      hdate       = hdate.avg,
+                      mdt         = dtemp,
+                      vern_factor = vrf,
+                      basetemp    = basetemp,
+                      phen_model  = "t")
+      
+      phu.annual[ilo, ila] <- as.integer(phu)
+      
+    }
     
   } # i
   
