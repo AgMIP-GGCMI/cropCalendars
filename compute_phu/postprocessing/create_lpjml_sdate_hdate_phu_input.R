@@ -28,14 +28,14 @@ SC     <- argr[2]
 # IRRI   <- argr[4]
 
 if (SC == "historical") {
-  syear <- 1991
-  eyear <- 2014
+  SY <- 1991
+  EY <- 2014
 } else {
-  syear <- 2014
-  eyear <- 2100
+  SY <- 2014
+  EY <- 2100
 }
 
-years  <- syear:eyear
+years  <- SY:EY
 NYEARS <- length(years)
 
 # ------------------------------------------------------#
@@ -108,7 +108,7 @@ for (yy in 1:length(years)) {
     # --------------------------# 
     nc1 <- paste0(ncdir_rbcal,
                   crop.ls[["ggcmi"]][cr], "_", irri.ls[["ggcmi"]][ir],
-                  "_", GCM, "_", SC, "_", syear, "-", eyear,
+                  "_", GCM, "_", SC, "_", SY, "-", EY,
                   "_ggcmi_ph3_rule_based_crop_calendar.nc4")
     
     nc <- nc_open(nc1)
@@ -123,7 +123,7 @@ for (yy in 1:length(years)) {
     # --------------------------# 
     nc2 <- paste0(ncdir_rbcal,
                   crop.ls[["ggcmi"]][cr], "_", irri.ls[["ggcmi"]][ir],
-                  "_", GCM, "_", SC, "_", syear, "-", eyear,
+                  "_", GCM, "_", SC, "_", SY, "-", EY,
                   "_ggcmi_ph3_rule_based_phu.nc4")
     
     nc <- nc_open(nc2)
@@ -165,10 +165,10 @@ for (j in 1:NYEARS) {
   y <- c(y, c(t(xsd[,,j])))
 }
 
-FNAME.SD <- paste0(clmdir,"sdate_",GCM, "_", SC, "_", syear, "_", eyear,
+FNAME.SD <- paste0(clmdir,"sdate_",GCM, "_", SC, "_", SY, "_", EY,
                    "_ggcmi_ph3_rule_based_crop_calendar.clm")
 sdfile <- file(FNAME.SD, "wb")
-fwriteheader(sdfile, "LPJSOWD", 2, NBANDS, syear, NYEARS, NCELLS, 1)
+fwriteheader(sdfile, "LPJSOWD", 2, NBANDS, SY, NYEARS, NCELLS, 1)
 writeBin(as.integer(y/SCALAR), sdfile, size=2, endian=.Platform$endian)
 close(sdfile)
 
@@ -180,10 +180,10 @@ for (j in 1:NYEARS) {
   y <- c(y, c(t(xhd[,,j])))
 }
 
-FNAME.HD <- paste0(clmdir,"hdate_",GCM, "_", SC, "_", syear, "_", eyear,
+FNAME.HD <- paste0(clmdir,"hdate_",GCM, "_", SC, "_", SY, "_", EY,
                    "_ggcmi_ph3_rule_based_crop_calendar.clm")
 hdfile <- file(FNAME.HD, "wb")
-fwriteheader(hdfile, "LPJSOWD", 2, NBANDS, syear, NYEARS, NCELLS, 1)
+fwriteheader(hdfile, "LPJSOWD", 2, NBANDS, SY, NYEARS, NCELLS, 1)
 writeBin(as.integer(y/SCALAR), hdfile, size=2, endian=.Platform$endian)
 close(hdfile)
 
@@ -195,10 +195,10 @@ for (j in 1:NYEARS) {
   y <- c(y, c(t(xph[,,j])))
 }
 
-FNAME.HD <- paste0(clmdir,"phu_",GCM, "_", SC, "_", syear, "_", eyear,
+FNAME.HD <- paste0(clmdir,"phu_",GCM, "_", SC, "_", SY, "_", EY,
                    "_ggcmi_ph3_rule_based_crop_calendar.clm")
 hdfile <- file(FNAME.HD, "wb")
-fwriteheader(hdfile, "LPJmLHU", 2, NBANDS, syear, NYEARS, NCELLS, 1)
+fwriteheader(hdfile, "LPJmLHU", 2, NBANDS, SY, NYEARS, NCELLS, 1)
 writeBin(as.integer(y/SCALAR), hdfile, size=2, endian=.Platform$endian)
 close(hdfile)
 
