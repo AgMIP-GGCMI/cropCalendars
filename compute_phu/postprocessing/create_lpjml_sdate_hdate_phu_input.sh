@@ -11,7 +11,7 @@ for gc in "${!gcms[@]}";do
         echo "GCM: ${gcms[gc]} --- SCENARIO: ${scens[sc]}"
         echo "-------------------------------------------"
 
-sbatch --qos=standby --ntasks=1 --cpus-per-task=4 -J clm_${gc}_${sc} -A macmit -t 01:00:00 --workdir=${wd} -o out_err/clm_${gc}_${sc}.out -e out_err/clm_${gc}_${sc}.err R -f postprocessing/create_lpjml_sdate_hdate_phu_input.R --args "${gcms[gc]}" "${scens[sc]}"
+sbatch --ntasks=1 --cpus-per-task=4 -J clm_${gc}_${sc} -A macmit --workdir=${wd} -o out_err/clm_${gc}_${sc}.out -e out_err/clm_${gc}_${sc}.err R -f postprocessing/create_lpjml_sdate_hdate_phu_input.R --args "${gcms[gc]}" "${scens[sc]}"
 
   done
 done
