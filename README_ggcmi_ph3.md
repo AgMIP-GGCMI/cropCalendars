@@ -23,7 +23,7 @@ Running the code:
 
 4) `./compute_sdate_hdate/main_ggcmi_ph3.R`
 - Define loops for running scenarios and crops in batch
-- To run it type: `bash main_ggcmi_ph3.R` (note: module purge might be needed beforehand, if need to open old Rdata files)
+- To run it type: `bash main_ggcmi_ph3.sh` (note: module purge might be needed beforehand, if need to open old Rdata files)
 
 5) `./postprocessing/create_ncdf_sdate_hdate_multiyear_ggcmi_ph3.sh`
 
