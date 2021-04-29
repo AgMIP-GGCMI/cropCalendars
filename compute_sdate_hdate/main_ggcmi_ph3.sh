@@ -4,7 +4,7 @@ module load piam
 
 wd=/home/minoli/crop_calendars_gitlab/ggcmi_ph3/compute_sdate_hdate
 
-gcms=('GFDL-ESM4') #('GFDL-ESM4' 'IPSL-CM6A-LR' 'MPI-ESM1-2-HR' 'MRI-ESM2-0' 'UKESM1-0-LL')
+gcms=('GFDL-ESM4' 'IPSL-CM6A-LR' 'MPI-ESM1-2-HR' 'MRI-ESM2-0' 'UKESM1-0-LL')
 scens=('ssp585' 'ssp370' 'ssp126')
 syears=('1961' '1971' '1981' '1991' '2001' '2011' '2021' '2031' '2041' '2051' '2061' '2071')
 eyears=('1990' '2000' '2010' '2020' '2030' '2040' '2050' '2060' '2070' '2080' '2090' '2100')
@@ -27,13 +27,3 @@ done
 
 
 #------
-
-# R -f ./postprocessing/merge_winter_spring_wheat.R --args $SLURM_ARRAY_TASK_ID
-
-
-
-
-# R -f ./postprocessing/mirca2000.R
-
-# Array 1-12 or 13
-# R -f ./postprocessing/create_lpjml_sdate_hdate_input.R --args  $SLURM_ARRAY_TASK_ID
