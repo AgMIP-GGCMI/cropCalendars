@@ -2,7 +2,7 @@
 
 wd=/home/minoli/crop_calendars_gitlab/ggcmi_ph3/compute_phu
 
-gcms=('UKESM1-0-LL')
+gcms=('GFDL-ESM4' 'IPSL-CM6A-LR' 'MPI-ESM1-2-HR' 'MRI-ESM2-0') #('UKESM1-0-LL')
 scens=('historical' 'ssp585' 'ssp370' 'ssp126')
 
 for gc in "${!gcms[@]}";do

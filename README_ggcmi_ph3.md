@@ -6,9 +6,11 @@ Contact: sara.minoli@pik-potsdam.de
 
 This folder includes R-coded scripts for computing sowing and harvest dates following the approaches from Waha et al. (2012) and Minoli et al. (2019).
 
+[[_TOC_]]
+
 ## Running the code:
 
-### Crop calendars (sdate & hdate)
+### Crop Calendars (sdate & hdate)
 
 1. Adjust crop parameters in `./compute_sdate_hdate/parameters/crop_parameters.csv` (default are taken from Waha 2012 & Minoli 2019)
 
@@ -33,9 +35,11 @@ This folder includes R-coded scripts for computing sowing and harvest dates foll
 
 ### Phenological Heat Units (PHU)
 
-1. `./compute_phu/main_ggcmi_ph3.sh`
+1. Crop parameters `./compute_phu/parameters/crop_pars_ggcmi_ph3.csv` should correspond to those in LPJmL code `pft_phase3.js`
 
-2. `./compute_phu/postprocessing/create_lpjml_sdate_hdate_phu_input.sh`
+2. Compute PHU and save as ncdf `./compute_phu/main_ggcmi_ph3.sh`
+
+3. Generate lpjml input files for prescribing sdate and phu `./compute_phu/postprocessing/create_lpjml_sdate_hdate_phu_input.sh`
 
 ### Accessories
 
