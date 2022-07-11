@@ -8,10 +8,7 @@ ha2kmq <- function(ha) {ha/100}
 kmq2ha <- function(kmq) {kmq*100}
 deg2rad <- function(deg) {((deg)*M_PI*.00555555555555555555)}
 
-
-
-# Calculate days where thresholds are crossed from monthly values
-calcDoyCrossThreshold <- function(monthly_value, threshold) {
+interpolateMonthlyToDaily <- function(monthly_value) {
 
   # Middle day of each month
   midday <- c(15,43,74,104,135,165,196,227,257,288,318,349) #midday[NMONTH+1]
@@ -33,6 +30,16 @@ calcDoyCrossThreshold <- function(monthly_value, threshold) {
     daily_value[["x"]] <- c(daily_value[["x"]], value[["x"]])
     daily_value[["y"]] <- c(daily_value[["y"]], value[["y"]])
   }
+
+  return(daily_value)
+}
+
+
+
+# Calculate days where thresholds are crossed from monthly values
+calcDoyCrossThreshold <- function(monthly_value, threshold) {
+
+  daily_value <- interpolateMonthlyToDaily(monthly_value)
 
   # Find days when value above threshold
   value_above <- daily_value$y >= threshold
@@ -59,23 +66,37 @@ calcDoyCrossThreshold <- function(monthly_value, threshold) {
   return(list("doy_cross_up" = day_cross_up, "doy_cross_down" = day_cross_down))
 }
 
+# # Find first month of four wettest months (sum of their precipitation/PET ratios)
+# calcDoyWetMonth <- function(monthly_value) {
+#   # Middle day of each month
+#   midday <- c(15,43,74,104,135,165,196,227,257,288,318,349) #midday[NMONTH+1]
+#   NDAYYEAR <- 365
+
+#   # Replicate values twice (two years)
+#   midday2 <- c(midday[1:12], midday[1:12]+NDAYYEAR)
+#   monthly_value2 <- rep(monthly_value, 2)
+
+#   x <- NULL
+#   for (i in 0:11) {
+#     x <- c(x, sum(monthly_value2[c(1:4)+i]))
+#   }
+
+#   return(midday[which(x==max(x))[1]])
+# }
+
 # Find first month of four wettest months (sum of their precipitation/PET ratios)
 calcDoyWetMonth <- function(monthly_value) {
-  # Middle day of each month
-  midday <- c(15,43,74,104,135,165,196,227,257,288,318,349) #midday[NMONTH+1]
-  NDAYYEAR <- 365
 
-  # Replicate values twice (two years)
-  midday2 <- c(midday[1:12], midday[1:12]+NDAYYEAR)
-  monthly_value2 <- rep(monthly_value, 2)
+  doys <- 1:365
+  daily_value <- interpolateMonthlyToDaily(monthly_value)[["y"]]
 
   x <- NULL
-  for (i in 0:11) {
-    x <- c(x, sum(monthly_value2[c(1:4)+i]))
+  for (i in 0:364) {
+    x <- c(x, sum(daily_value[c(1:120)+i]))
   }
-
-  return(midday[which(x==max(x))[1]])
+  return(doys[which(x==max(x))[1]])
 }
+calcDoyWetMonth(1:12)
 
 # Calculate variation coefficient
 calcVarCoeff <- function(x) {
