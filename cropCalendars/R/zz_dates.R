@@ -85,4 +85,9 @@ date_to_month <- function(date = "2010-01-29"
   as.integer(format(as.Date(date), "%m"))
 }
 
+# Convert date "YYYY-MM-DD" to day-of-the-year (DOY)
+date_to_year <- function(date = "2010-01-29"
+) {
+  as.integer(format(as.Date(date), "%Y"))
+}
 

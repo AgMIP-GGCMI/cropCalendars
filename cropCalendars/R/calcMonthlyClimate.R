@@ -5,9 +5,9 @@
 #'
 #' @param lat latitude (decimal value)
 #' @param temp daily temperature (degree Celsius) for a number of years. It should be passed
-#' in form of a matrix with dimensions [nyears, 365].
-#' @param temp daily precipitation for a number of years. It should be passed
-#' in form of a matrix with dimensions [nyears, 365].
+#' in form of a vector.
+#' @param prec daily precipitation for a number of years. It should be passed
+#' in form of a vector.
 #' @param syear start year in the climate time series.
 #' @param eyear end yeat in the climate time series.
 #' @examples
@@ -18,11 +18,12 @@
 #'                    syear = 2001, eyear = 2003)
 #' @export
 
-calcMonthlyClimate <- function(lat,
-                               temp,
-                               prec,
-                               syear,
-                               eyear
+calcMonthlyClimate <- function(lat        = NULL,
+                               temp       = NULL,
+                               prec       = NULL,
+                               syear      = NULL,
+                               eyear      = NULL,
+                               leap_years = TRUE
                                ) {
 
   years   <- syear:eyear
@@ -31,13 +32,24 @@ calcMonthlyClimate <- function(lat,
   ndays   <- length(days)
   nmonths <- 12
 
+  if (leap_years == FALSE) {
+    dates <- createDateSeq(nstep = 365, years = years)
+
+  } else {
+    dates <- seqDates(start_date = paste0(syear, "-01-01"),
+                      end_date   = paste0(eyear, "-12-31"),
+                      step       = "day")
+  }
+  d_dates <- date_to_doy(dates)
+  m_dates <- date_to_month(dates)
+  y_dates <- date_to_year(dates)
+
   # Compute PET (Potential ET)
   cat("Computing daily PET ...\n")
-  pet <- array(NA, dim = dim(temp))
-  for (yy in seq_len(nyears)) {
-    for (dd in seq_len(ndays)) {
-      pet[yy, dd] <- calcPET(temp = temp[yy, dd], lat = lat, day = dd)
-    }
+  pet <- NULL
+  for (i in seq_len(length(temp))) {
+    pet_today <- calcPET(temp = temp[i], lat = lat, day = d_dates[i])
+    pet <- c(pet, pet_today)
   }
 
   # Compute monthly climate for each year
@@ -50,10 +62,12 @@ calcMonthlyClimate <- function(lat,
   for (yy in seq_len(nyears)) {
     for (mm in seq_len(nmonths)) {
 
-      # which days belong to month mm
-      mtemp_y[yy, mm] <- mean(temp) # mean temp
-      mprec_y[yy, mm] <- sum(prec)  # cumulative pr
-      mpet_y[yy, mm]  <- sum(pet)   # cumulative pet
+      # which days belong to year yy and month mm
+      idx <- which(y_dates == years[yy] & m_dates == mm)
+
+      mtemp_y[yy, mm] <- mean(temp[idx]) # mean temp
+      mprec_y[yy, mm] <- sum(prec[idx])  # cumulative pr
+      mpet_y[yy, mm]  <- sum(pet[idx])   # cumulative pet
       mppet_y[yy,mm]  <- mprec_y[yy, mm]/mpet_y[yy, mm]          # ppet ratio
 
     }

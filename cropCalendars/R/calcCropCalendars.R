@@ -15,8 +15,8 @@ calcCropCalendars <- function(lon          = NULL,
     croppar_file <- system.file("extdata", "crop_parameters.csv",
                                 package = "cropCalendars", "mustWork" = TRUE)
   }
-  crop_parameters <- getCropParam(cropparam_file = croppar_file,
-                                  crops          = crop
+  crop_parameters <- getCropParam(crops          = crop,
+                                  cropparam_file = croppar_file
                                   )
 
   # Get monthly weather data of the grid cell
