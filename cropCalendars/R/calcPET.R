@@ -9,7 +9,8 @@
 #' @export
 calcPET <- function(temp,
                     lat,
-                    day) { #(kg H2O m-2 d-1 = mm d-1)
+                    day
+                    ) { #(kg H2O m-2 d-1 = mm d-1)
 
   ndays_year <- 365
   M_1_PI     <- 0.318309886183790671538

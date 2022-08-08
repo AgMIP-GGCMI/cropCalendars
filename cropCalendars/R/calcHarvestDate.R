@@ -8,7 +8,8 @@ calcHarvestDate <- function(croppar,
                             sowing_season,
                             seasonality,
                             harvest_rule,
-                            hd_vector) {
+                            hd_vector
+                            ) {
 
   # Extract individual parameter names and values
   for (i in colnames(croppar)) {

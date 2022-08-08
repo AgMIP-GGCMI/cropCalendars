@@ -15,7 +15,7 @@ calcPhu <- function(sdate       = NA, # sowing date (DOY)
                     vern_factor = rep(1, 365), # from calc.vf()
                     basetemp    = 0,    # minimum cardinal temperature
                     phen_model  = "t" # "tv", "tp", "tvp"
-) {
+                    ) {
 
   husum <- 0
 

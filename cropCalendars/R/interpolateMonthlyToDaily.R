@@ -5,7 +5,7 @@
 #'
 #' @export
 interpolateMonthlyToDaily <- function(monthly_value
-) {
+                                      ) {
 
   # Middle day of each month
   midday   <- c(15, 43, 74, 104, 135, 165, 196, 227, 257, 288, 318, 349)

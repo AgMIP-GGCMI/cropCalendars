@@ -11,7 +11,8 @@ calcVd <- function(temp_mean_month  = sample(-10:30, 12), # monthly mean tempera
                    max.vern.days   = 70,     # maximum vernalization requirements (days)
                    max.vern.months = 5,      # maximum vernalization
                    tv2             = 3,      # vern.temp.opt.min
-                   tv3             = 10) {   # vern.temp.opt.max
+                   tv3             = 10      # vern.temp.opt.max
+                   ) {
 
   max.vern.days.month <- max.vern.days/max.vern.months # Vsat_max [days per month]
 

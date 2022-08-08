@@ -13,16 +13,17 @@
 #' @param tv4 vern.temp.max
 
 calcVrf <- function(sdate = NA,
-                     hdate = NA,
-                     mdt   = rep(NA, 365),
-                     vd    = 0,
-                     vd_b  = 0.2,
-                     max.vern.days   = 70,
-                     max.vern.months = 5,
-                     tv1             = -4,
-                     tv2             = 3,
-                     tv3             = 10,
-                     tv4             = 17) {
+                    hdate = NA,
+                    mdt   = rep(NA, 365),
+                    vd    = 0,
+                    vd_b  = 0.2,
+                    max.vern.days   = 70,
+                    max.vern.months = 5,
+                    tv1             = -4,
+                    tv2             = 3,
+                    tv3             = 10,
+                    tv4             = 17
+                    ) {
 
   # Initialize Vernalization Components
   veff        <- array(0, 365)   # Vernalization Effectiveness

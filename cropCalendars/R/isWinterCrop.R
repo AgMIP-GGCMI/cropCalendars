@@ -6,7 +6,11 @@
 #' @details This is the rule suggested by Portman et al. 2010, slightly
 #' changed in that <= 7 instead of 6°C is used.
 #' @export
-isWinterCrop <- function(start, end, tcm, lat) {
+isWinterCrop <- function(start,
+                         end,
+                         tcm,
+                         lat
+                         ) {
 
   # tcm = temp of coldest month
   # start / end = sdate / hdate

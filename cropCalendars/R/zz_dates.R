@@ -13,10 +13,9 @@
 #' @seealso strptime, as.Date, format
 #' @export
 
-createDateSeq <- function(
-  nstep = 365,
-  years = 2000
-) {
+createDateSeq <- function(nstep = 365,
+                          years = 2000
+                          ) {
 
   # Number of days per month
   ndays_in_month <- c(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)

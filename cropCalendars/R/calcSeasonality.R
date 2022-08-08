@@ -3,7 +3,8 @@
 #' @export
 calcSeasonality <- function(monthly_temp,
                             monthly_prec,
-                            temp_min = 10) {
+                            temp_min = 10
+                            ) {
 
   var_coeff_prec <- calcVarCoeff(monthly_prec)
   var_coeff_temp <- calcVarCoeff(deg2k(monthly_temp))

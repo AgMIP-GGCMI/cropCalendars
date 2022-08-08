@@ -4,7 +4,8 @@
 #' 120-days cumulative sum of the precipitation to potential evapotranspiration
 #' (P/PET) ratio.
 #'
-calcDoyWetMonth <- function(monthly_value) {
+calcDoyWetMonth <- function(monthly_value
+                            ) {
 
   doys <- 1:365
   daily_value <- interpolateMonthlyToDaily(monthly_value)[["y"]]

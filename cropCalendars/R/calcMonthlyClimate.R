@@ -2,6 +2,7 @@
 #'
 #' @description Calculate monthly climate variables needed for the computation
 #' of the rule-based crop calendars (Waha et al., 2012; Minoli et al., 2019)
+#'
 #' @param lat latitude (decimal value)
 #' @param temp daily temperature (degree Celsius) for a number of years. It should be passed
 #' in form of a matrix with dimensions [nyears, 365].
@@ -21,7 +22,8 @@ calcMonthlyClimate <- function(lat,
                                temp,
                                prec,
                                syear,
-                               eyear) {
+                               eyear
+                               ) {
 
   years   <- syear:eyear
   nyears  <- length(years)

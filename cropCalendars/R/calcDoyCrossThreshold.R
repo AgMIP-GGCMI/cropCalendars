@@ -5,7 +5,7 @@
 #' @export
 calcDoyCrossThreshold <- function(monthly_value,
                                   threshold
-) {
+                                  ) {
 
   ndays_year  <- 365
   daily_value <- interpolateMonthlyToDaily(monthly_value)

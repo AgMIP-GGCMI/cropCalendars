@@ -9,7 +9,7 @@
 # Dates
 doy2month <- function(doy  = 1,
                       year = 2015
-) {
+                      ) {
   mon <- strptime(paste(year, doy), format = "%Y %j")$mon+1
   return(mon)
 }
