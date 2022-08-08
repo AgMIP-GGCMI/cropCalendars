@@ -1,11 +1,14 @@
 Package: cropCalendars
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Compute rule-base crop sowing and harvest dates.
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Author: Sara Minoli <minoli@pik-potsdam.de>
+Maintainer:
+    Sara Minoli <minoli@pik-potsdam.de>
+Description: R-package for computing sowing and harvest dates following
+    the approaches from Waha et al. (2012) and Minoli et al. (2019).
+Suggests:
+    ncdf4
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
