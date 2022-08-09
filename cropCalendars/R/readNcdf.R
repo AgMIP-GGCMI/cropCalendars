@@ -4,9 +4,10 @@
 #'
 #' @param file_name File name of ncdf file with path.
 #' @param dim_subset (Optional) List of dimensions to be subset, typically
-#' lon, lat and time. The list's element names and their order should correspond
-#' to the names and order of the dimensions as defined in the file. If unknown,
-#' use verbose = TRUE to print them out.
+#' lon, lat and time. The list's element names should correspond
+#' to the names of the dimensions as defined in the file. If unknown,
+#' use verbose = TRUE to print them out. If a dimension is note specified, it is
+#' read entirely.
 #' @param var_name (Optional) Variable name (e.g. "tas"). Needed if the file
 #' contains more than one variable (e.g. temperature, precipitation).
 #' @param verbose (Optional) If TRUE, it prints some useful meta-data (e.g.
