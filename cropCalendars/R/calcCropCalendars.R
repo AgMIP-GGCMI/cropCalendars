@@ -2,6 +2,14 @@
 #'
 #' @description Wrapper function calling sub-functions to
 #' calculate sowing and harvest dates.
+#' @param lon Longitude (decimal degrees)
+#' @param lat Latitude (decimal degrees)
+#' @param mclimate Monthly climate. A list returned by the calcMonthlyClimate()
+#' function.
+#' @param crop A crop name (chr), among those specified in the croppar_file
+#' @param croppar_file Crop parameter file. If not specified, the default one is
+#' used.
+#' @seealso calcMonthlyClimate
 #'
 calcCropCalendars <- function(lon          = NULL,
                               lat          = NULL,
