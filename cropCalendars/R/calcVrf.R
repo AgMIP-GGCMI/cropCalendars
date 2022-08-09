@@ -12,11 +12,11 @@
 #' @param tv3 vern.temp.opt.max
 #' @param tv4 vern.temp.max
 
-calcVrf <- function(sdate = NA,
-                    hdate = NA,
-                    mdt   = rep(NA, 365),
-                    vd    = 0,
-                    vd_b  = 0.2,
+calcVrf <- function(sdate           = NA,
+                    hdate           = NA,
+                    mdt             = rep(NA, 365),
+                    vd              = 0,
+                    vd_b            = 0.2,
                     max.vern.days   = 70,
                     max.vern.months = 5,
                     tv1             = -4,

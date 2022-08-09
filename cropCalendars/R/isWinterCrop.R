@@ -1,15 +1,17 @@
-#' @title Tests if given season should be classified as winter crop
+#' @title Tests if a given growing season should be classified as winter crop
 #'
 #' @param start Sowing date as day of the year (DOY)
 #' @param end Harvest (or maturity) date as day of the year (DOY)
+#' @param tcm Temperature of the coldest month (deg C)
+#' @param lat Latitude (decimal degrees)
 #'
 #' @details This is the rule suggested by Portman et al. 2010, slightly
 #' changed in that <= 7 instead of 6°C is used.
 #' @export
-isWinterCrop <- function(start,
-                         end,
-                         tcm,
-                         lat
+isWinterCrop <- function(start = NULL,
+                         end   = NULL,
+                         tcm   = NULL,
+                         lat   = NULL
                          ) {
 
   # tcm = temp of coldest month

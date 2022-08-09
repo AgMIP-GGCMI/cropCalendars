@@ -26,49 +26,77 @@ calcCropCalendars <- function(lon          = NULL,
   mppet_diff <- mclimate$mppet_diff
 
   # Seasonality type
-  seasonality <- calcSeasonality(mtemp, mprec, 10)
+  seasonality <- calcSeasonality(
+    monthly_temp = mtemp,
+    monthly_prec = mprec,
+    temp_min     = 10
+  )
 
   # Sowing date
-  sowing <- calcSowingDate(crop_parameters, mtemp, mppet, seasonality, lat)
+  sowing <- calcSowingDate(
+    croppar      = crop_parameters,
+    monthly_temp = mtemp,
+    monthly_ppet = mppet,
+    seasonality  = seasonality,
+    lat          = lat
+  )
 
   sowing_month  <- sowing[["sowing_month"]]
   sowing_day    <- sowing[["sowing_doy"]]
   sowing_season <- sowing[["sowing_season"]]
 
   # Harvest date
-  harvest_rule  <- calcHarvestRule(crop_parameters, mtemp, mppet, seasonality)
+  harvest_rule  <- calcHarvestRule(
+    croppar      = crop_parameters,
+    monthly_temp = mtemp,
+    monthly_ppet = mppet,
+    seasonality  = seasonality
+  )
 
-  harvest_vector  <- calcHarvestDateVector(crop_parameters, sowing_day,
-                                           sowing_season, mtemp, mppet,
-                                           mppet_diff)
+  harvest_vector <- calcHarvestDateVector(
+    croppar           = crop_parameters,
+    sowing_date       = sowing_day,
+    sowing_season     = sowing_season,
+    monthly_temp      = mtemp,
+    monthly_ppet      = mppet,
+    monthly_ppet_diff = mppet_diff
+  )
 
-  harvest <- calcHarvestDate(crop_parameters, mtemp, sowing_day,
-                             sowing_month, sowing_season, seasonality,
-                             harvest_rule, harvest_vector)
+  harvest <- calcHarvestDate(
+    croppar       = crop_parameters,
+    monthly_temp  = mtemp,
+    sowing_date   = sowing_day,
+    sowing_month  = sowing_month,
+    sowing_season = sowing_season,
+    seasonality   = seasonality,
+    harvest_rule  = harvest_rule,
+    hd_vector     = harvest_vector
+  )
 
   harvest_day_rf  <- harvest[["hd_rf"]]
   harvest_day_ir  <- harvest[["hd_ir"]]
-  harvest_reas_rf <- harvest[["harvest_reason_rf"]]
-  harvest_reas_ir <- harvest[["harvest_reason_ir"]]
+  harvest_reas_rf <- names(harvest[["harvest_reason_rf"]])
+  harvest_reas_ir <- names(harvest[["harvest_reason_ir"]])
 
   # Growing period length
   growpriod_rf <- calcGrowingPeriod(sowing_day, harvest_day_rf, 365)
   growpriod_ir <- calcGrowingPeriod(sowing_day, harvest_day_ir, 365)
 
   # Output table
-  pixel_df <- data.frame("lon"              = rep(lon, 2),
-                         "lat"              = rep(lat, 2),
-                         "cft_id"           = rep(crop_parameters$cft_id, 2),
-                         "crop"             = rep(crop_parameters$crop_name, 2),
-                         "irrigation"       = c("Rainfed", "Irrigated"),
-                         "seasonality_type" = rep(seasonality, 2),
-                         "sowing_season"    = rep(sowing_season, 2),
-                         "sowing_month"     = rep(sowing_month, 2),
-                         "sowing_doy"       = rep(sowing_day, 2),
-                         "harvest_rule"     = rep(harvest_rule, 2),
-                         "harvest_reason"   = c(harvest_reas_rf, harvest_reas_ir),
-                         "maturity_doy"     = c(harvest_day_rf, harvest_day_ir),
-                         "growing_period"   = c(growpriod_rf, growpriod_ir)  )
+  pixel_df <- data.frame(
+    "lon"              = rep(lon, 2),
+    "lat"              = rep(lat, 2),
+    "crop"             = rep(crop_parameters$crop_name, 2),
+    "irrigation"       = c("Rainfed", "Irrigated"),
+    "seasonality_type" = rep(seasonality, 2),
+    "sowing_season"    = rep(sowing_season, 2),
+    "sowing_month"     = rep(sowing_month, 2),
+    "sowing_doy"       = rep(sowing_day, 2),
+    "harvest_rule"     = rep(names(harvest_rule), 2),
+    "harvest_reason"   = c(harvest_reas_rf, harvest_reas_ir),
+    "maturity_doy"     = c(harvest_day_rf, harvest_day_ir),
+    "growing_period"   = c(growpriod_rf, growpriod_ir)
+  )
 
   return(pixel_df)
 

@@ -2,9 +2,9 @@
 #'
 #' @export
 
-getCropParam <- function(crops          = NULL,
+getCropParam <- function(crops          = "all",
                          cropparam_file = NULL,
-                         print_all      = FALSE
+                         print_all_par  = FALSE
                          ) {
   # If not specified, read default parameter file
   if (is.null(cropparam_file)) {
@@ -15,9 +15,11 @@ getCropParam <- function(crops          = NULL,
   crop_parameters_all <- read.csv(cropparam_file,
                                   header = T,
                                   stringsAsFactors = F)
-  crop_parameters_all <- subset(crop_parameters_all,
-                                crop_name %in% crops)
-  if (print_all) {
+  if (crops != "all") {
+    crop_parameters_all <- subset(crop_parameters_all,
+                                  crop_name %in% crops)
+  }
+  if (print_all_par) {
     cat("Importing crop-parameter table ...",
         "----------------------------------",
         sep = "\n")
