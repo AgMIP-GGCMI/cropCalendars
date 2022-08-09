@@ -55,7 +55,8 @@ createDateSeq <- function(nstep = 365,
 # Create sequence of dates and return as character
 seqDates <- function(start_date = "1980-01-01",
                      end_date   = "1980-12-31",
-                     step       = "day") {
+                     step       = "day"
+                     ) {
   as.character(
     seq.Date(from = as.Date(start_date),
              to   = as.Date(end_date),
@@ -63,31 +64,56 @@ seqDates <- function(start_date = "1980-01-01",
   )
 }
 
+# Check if date is 29th February
+is29Feb <- function(date = "1980-01-01"
+                    ) {
+  day <- format(as.Date(date), "%d")
+  mon <- format(as.Date(date), "%m")
+
+  return(paste(mon, day) == "02 29")
+}
+
 # Convert day-of-the-year (DOY) to date "YYYY-MM-DD"
 doy_to_date <- function(doy  = NULL,
                         year = NULL
-) {
+                        ) {
   if (length(doy) != length(year)) stop("doy and year have different length")
 
-  date <- strptime(paste(year, doy), format="%Y %j")
+  date <- strptime(paste(year, doy), format = "%Y %j")
   return(date)
 }
 
 # Convert date "YYYY-MM-DD" to day-of-the-year (DOY)
-date_to_doy <- function(date = "2010-01-29"
-) {
-  as.integer(format(as.Date(date), "%j"))
+date_to_doy <- function(date       = "2010-01-29",
+                        skip_feb29 = TRUE
+                        ) {
+
+  if (skip_feb29 == TRUE) {
+    # What DOY is Dec. 31 for the year of date, 365 or 366?
+    dec31 <- paste(format(as.Date(date), "%Y"), "12-31", sep = "-")
+    doy_dec31 <- as.integer(format(as.Date(dec31), "%j"))
+    # Convert date to DOY, including Feb. 29
+    doy1 <- as.integer(format(as.Date(date), "%j"))
+    # If is leap year, subtract 1 to all DOYs after Feb. 28
+    doy <- ifelse(doy_dec31 == 366 & doy1 > 28,
+                  doy1 - 1,
+                  doy1)
+  } else {
+    # Just convert date to DOY, including Feb. 29
+    doy <- as.integer(format(as.Date(date), "%j"))
+  }
+  return(doy)
 }
 
 # Convert date "YYYY-MM-DD" to day-of-the-year (DOY)
 date_to_month <- function(date = "2010-01-29"
-) {
+                          ) {
   as.integer(format(as.Date(date), "%m"))
 }
 
 # Convert date "YYYY-MM-DD" to day-of-the-year (DOY)
 date_to_year <- function(date = "2010-01-29"
-) {
+                         ) {
   as.integer(format(as.Date(date), "%Y"))
 }
 

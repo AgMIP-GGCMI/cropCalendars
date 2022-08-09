@@ -10,6 +10,7 @@
 #' in form of a vector.
 #' @param syear start year in the climate time series.
 #' @param eyear end yeat in the climate time series.
+#' @param incl_feb29 time series include February 29th in leap years?
 #' @examples
 #' d_temp <- matrix(rnorm(365*3, 15), nrow = 3)
 #' d_prec <- matrix(rnorm(365*3, 3, 50), nrow = 3)
@@ -23,16 +24,14 @@ calcMonthlyClimate <- function(lat        = NULL,
                                prec       = NULL,
                                syear      = NULL,
                                eyear      = NULL,
-                               leap_years = TRUE
+                               incl_feb29 = TRUE
                                ) {
 
   years   <- syear:eyear
   nyears  <- length(years)
-  days    <- seq_len(365)
-  ndays   <- length(days)
   nmonths <- 12
 
-  if (leap_years == FALSE) {
+  if (incl_feb29 == FALSE) {
     dates <- createDateSeq(nstep = 365, years = years)
 
   } else {
@@ -40,9 +39,10 @@ calcMonthlyClimate <- function(lat        = NULL,
                       end_date   = paste0(eyear, "-12-31"),
                       step       = "day")
   }
-  d_dates <- date_to_doy(dates)
-  m_dates <- date_to_month(dates)
   y_dates <- date_to_year(dates)
+  m_dates <- date_to_month(dates)
+  d_dates <- date_to_doy(dates, skip_feb29 = TRUE)
+
 
   # Compute PET (Potential ET)
   cat("Computing daily PET ...\n")
