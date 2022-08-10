@@ -9,7 +9,7 @@
 #' thermal-vernal-photo = "tvp"
 #'
 #' @export
-calcPhu <- function(sdate       = NA, # sowing date (DOY)
+calcPHU <- function(sdate       = NA, # sowing date (DOY)
                     hdate       = NA, # maturity date (DOY)
                     mdt         = rep(NA, 365), # daily mean temperature
                     vern_factor = rep(1, 365), # from calc.vf()
