@@ -73,7 +73,7 @@ readNcdf <- function(file_name  = NULL,
     warning("Reading a subset of data.")
 
     # Get dimensions subset
-    idim_list <- list()
+    idim_list <- dim_list_sub <- list()
     # Loop through the dimensions
     for (i in seq_len(length(dims))) {
       # Which indices should be extracted for dims[i]?
@@ -83,16 +83,16 @@ readNcdf <- function(file_name  = NULL,
         # if dims[i] is not specified in dim_subset, read it entirely
         idim_list[[dname]] <- seq_len(length(dim_list[[dname]]))
       }
+      dim_list_sub[[dname]] <- dim_list[[dname]][idim_list[[dname]]]
     }
 
     # Define start and count for ncvar_get
     st <- unlist(lapply(idim_list, min))
     ct <- unlist(lapply(idim_list, max)) - st + 1
 
+    # Read data from ncdf and assign dimnames to array
     nc           <- ncvar_get(nf, var_name, start = st, count = ct)
-    dim(nc)      <- unname(ct)
-    dimnames(nc) <- dim_subset
+    dimnames(nc) <- dim_list_sub
   }
-
   return(nc)
 }
