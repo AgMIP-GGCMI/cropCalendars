@@ -1,10 +1,55 @@
 rm(list=ls(all=TRUE))
 
+print("test")
+
 library(devtools)
 library(ncdf4)
 library(abind)
+library(data.table)
+library(foreach)
 #library(cropCalendars)
 load_all()
+
+work_dir <- paste0("/p/projects/macmit/users/minoli/PROJECTS/",
+                   "GGCMI_ph3_adaptation_test_220811/ISIMIP3b/")
+parallel    <- TRUE
+cluster_job <- TRUE
+setwd(work_dir)
+
+if (cluster_job == TRUE) {
+  # import argument from bash script
+  options(echo = FALSE) # if you want see commands in output file
+  args <- commandArgs(trailingOnly = TRUE)
+} else {
+  args <- c('UKESM1-0-LL', 'ssp585', 'Maize')
+}
+print(args)
+
+# select variable, crop, model
+gcm  <- args[1]
+scen <- args[2]
+cro  <- args[3]
+
+# gg <- 1; sc <- 5; yy <- 1
+# gcm  <- gcms[gg]
+# scen <- scens[sc]
+# ccal_year <- ccal_years[yy]
+# cro <- "Maize"
+
+
+if(parallel == TRUE) {
+  library(foreach)
+  library(doParallel)
+  # The size of our cluster must match the number of CPUs allocated to us
+  # by SLURM.
+  # By default, R can see all CPUs, including those not allocated to us.
+  # ncpus <- as.integer(Sys.getenv("SLURM_JOB_CPUS_PER_NODE"))
+  ncpus <- 32
+  cl <- makeCluster(ncpus)
+  registerDoParallel(cl)
+  getDoParName()
+  getDoParWorkers()
+}
 
 gcms <- c(
   "GFDL-ESM4",
@@ -42,8 +87,8 @@ eyears <- list(
   "ssp370"     = seq(2020, 2100, by = 10)
 )
 
-ccal_years <- seq(1601, 2091, by 10)
-
+ccal_years <- seq(1601, 2091, by = 10)
+clm_avg_years <- 30
 vars <- c("tas", "pr")
 
 # Loop through all GCMs and scenarios and list all files needed to
@@ -67,8 +112,8 @@ for (vv in seq(length(vars))) {
           clm_var       = vars[vv],
           extent        = "global",
           time_step     = "daily",
-          start_year    = syears[["historical"]][16:17],
-          end_year      = eyears[["historical"]][16:17],
+          start_year    = syears[["historical"]],
+          end_year      = eyears[["historical"]],
           file_ext      = ".nc"
         )
       } else {
@@ -136,112 +181,210 @@ grid_df <- as.data.frame(
   )
 names(grid_df) <- c("lon", "lat")
 
-# Slice the lon-lat-time array by lon to enable parallelization
+
+
+# ----
+
+# Get all climate files for one scenario
+fnames_tas <- clm_file_list[["tas"]][[gcms[gg]]][[scens[sc]]]
+fnames_pr  <- clm_file_list[["pr"]][[gcms[gg]]][[scens[sc]]]
+
+ccal_first_year <- ccal_years[which.min(abs(min(syears[[scens[sc]]]) - ccal_years))]
+ccal_last_year  <- ccal_years[which.min(min(eyears[[scens[sc]]]) - ccal_years)]
+
+syear <- ccal_first_year - clm_avg_years
+eyear <- ccal_first_year - 1
+idx_first_file <- grep(syear, fnames_tas)
+idx_last_file  <- grep(eyear, fnames_tas)
+
 lon_matrix <- matrix(
   seq(min(grid_df$lon), max(grid_df$lon), by = 0.5), nrow = 30
   )
 
+# Loop through lon slices
+output_df <- foreach(lo = seq_len(ncol(lon_matrix)),
+                     .combine = "rbind",
+                     .inorder = FALSE,
+                     .verbose=F) %dopar% {
+  # lo <- 1
+
+  # Subset grid for lons of this slice
+  grid_sub <- subset(grid_df, lon %in% lon_matrix[, lo])
+
+  tas_array <- pr_array <- NULL
+  for (i in idx_first_file:idx_last_file) {
+    cat("\n", fnames_tas[i])
+
+    tas <- readNcdf(file_name = fnames_tas[i],
+                    dim_subset = list(lon = lon_matrix[, lo]))
+    pr  <- readNcdf(file_name = fnames_pr[i],
+                    dim_subset = list(lon = lon_matrix[, lo]))
+
+    # Convert units
+    tas <- k2deg(tas)
+    pr  <- pr * 60 * 60 * 24
+
+    # Bind array along time dimension
+    tas_array <- abind(tas_array, tas, use.dnns = TRUE)
+    pr_array  <- abind(pr_array, pr, use.dnns = TRUE)
+  } # i
+
+  # Loop through pixels to extract temperature and precipitation
+  ccal_df <- NULL
+  for (j in seq_len(nrow(grid_sub))) {
+    # j <- 1
+    print(j)
+    lon_pix <- grid_sub$lon[j]
+    lat_pix <- grid_sub$lat[j]
+
+    tas_pix <- tas_array[as.character(lon_pix), as.character(lat_pix), ]
+    pr_pix  <- pr_array[as.character(lon_pix), as.character(lat_pix), ]
+
+    # Assign dates as dimnames of vectors
+    dates <- seqDates(
+      start_date = paste0(syear, "-01-01"),
+      end_date   = paste0(eyear, "-12-31"),
+      step = "day"
+    )
+    names(tas_pix) <- names(pr_pix) <- dates
+
+    # Calculate monthly climate
+    mclm <- calcMonthlyClimate(
+      lat        = lat_pix,
+      temp       = tas_pix,
+      prec       = pr_pix,
+      syear      = syear,
+      eyear      = eyear,
+      incl_feb29 = TRUE
+      )
+    # Calculate crop calendar
+    ccal <- calcCropCalendars(
+      lon          = lon_pix,
+      lat          = lat_pix,
+      mclimate     = mclm,
+      crop         = cro
+      )
+    ccal_df <- rbind(ccal_df, ccal)
+  } # j
+  return(ccal_df)
+} # lo
+
+DT <- data.table(output_df)
+# Save data table ----
+dfout_dir <- paste0(getwd(), "/ISIMIP3b/crop_calendars/DT/", scen, "/")
+if (!dir.exists(dfout_dir)) dir.create(dfout_dir, recursive = TRUE)
+fnout <- paste0(dfout_dir, "DT_output_crop_calendars_",
+                cro, "_", gcm, "_", scen, "_", syear, "_", eyear, ".Rdata")
+cat("\n", fnout)
+save(DT, file = fnout)
 
 
-for (gg in seq_len(length(gcms))) {
-  for (sc in seq_len(length(scens))) {
-    # gg <- 1; sc <- 5; lo <- 1
+# # ---- old ----
 
-    # Generate dates sequence for scenario[sc] for dimnames
-    if (length(grep("ssp", scens[sc])) > 0) {
-        dates <- seqDates(
-          start_date = paste0(syears[["historical"]][16], "-01-01"),
-          end_date   = paste0(max(eyears[[scens[sc]]]), "-12-31"),
-          step = "day"
-          )
-    } else {
-        dates <- seqDates(
-        start_date = paste0(min(syears[[scens[sc]]]), "-01-01"),
-        end_date   = paste0(max(eyears[[scens[sc]]]), "-12-31"),
-        step = "day"
-        )
-    }
-    # Get all climate files for one scenario
-    fnames_tas <- clm_file_list[["tas"]][[gcms[gg]]][[scens[sc]]]
-    fnames_pr  <- clm_file_list[["pr"]][[gcms[gg]]][[scens[sc]]]
-    if (length(fnames_tas) != length(fnames_pr)) stop("tas and pr file nr. differ")
+# # Slice the lon-lat-time array by lon to enable parallelization
+# lon_matrix <- matrix(
+#   seq(min(grid_df$lon), max(grid_df$lon), by = 0.5), nrow = 30
+#   )
 
-    # Loop through lon slices
-    for (lo in seq_len(ncol(lon_matrix))) {
+# for (gg in seq_len(length(gcms))) {
+#   for (sc in seq_len(length(scens))) {
+#     # gg <- 1; sc <- 5; lo <- 1
 
-      # Subset grid for lons of this slice
-      grid_sub <- subset(grid_df, lon %in% lon_matrix[, lo])
+#     # Generate dates sequence for scenario[sc] for dimnames
+#     if (length(grep("ssp", scens[sc])) > 0) {
+#         dates <- seqDates(
+#           start_date = paste0(syears[["historical"]][15], "-01-01"),
+#           end_date   = paste0(max(eyears[[scens[sc]]]), "-12-31"),
+#           step = "day"
+#           )
+#     } else {
+#         dates <- seqDates(
+#         start_date = paste0(min(syears[[scens[sc]]]), "-01-01"),
+#         end_date   = paste0(max(eyears[[scens[sc]]]), "-12-31"),
+#         step = "day"
+#         )
+#     }
+#     # Get all climate files for one scenario
+#     fnames_tas <- clm_file_list[["tas"]][[gcms[gg]]][[scens[sc]]]
+#     fnames_pr  <- clm_file_list[["pr"]][[gcms[gg]]][[scens[sc]]]
+#     if (length(fnames_tas) != length(fnames_pr)) stop("tas and pr file nr. differ")
 
-      # Extract lon-subset data from each file and concatenate along time dim
-      tmp_dir <- paste0(getwd(), "/tmp/", gcms[gg], "/", scens[sc], "/")
-      if (calc_climate == TRUE) {
-        tas_array <- pr_array <- NULL
-        for (i in seq_len(length(fnames_tas))) {
-          cat("\n", fnames_tas[i])
+#     # Loop through lon slices
+#     for (lo in seq_len(ncol(lon_matrix))) {
 
-          tas <- readNcdf(file_name = fnames_tas[i],
-                          dim_subset = list(lon = lon_matrix[, lo]))
-          pr  <- readNcdf(file_name = fnames_pr[i],
-                          dim_subset = list(lon = lon_matrix[, lo]))
+#       # Subset grid for lons of this slice
+#       grid_sub <- subset(grid_df, lon %in% lon_matrix[, lo])
 
-          # Convert units
-          tas <- k2deg(tas)
-          pr  <- pr * 60 * 60 * 24
+#       # Extract lon-subset data from each file and concatenate along time dim
+#       tmp_dir <- paste0(getwd(), "/tmp/", gcms[gg], "/", scens[sc], "/")
+#       if (calc_climate == TRUE) {
+#         tas_array <- pr_array <- NULL
+#         for (i in seq_len(length(fnames_tas))) {
+#           cat("\n", fnames_tas[i])
 
-          # Bind array along time dimension
-          tas_array <- abind(tas_array, tas, use.dnns = TRUE)
-          pr_array  <- abind(pr_array, pr, use.dnns = TRUE)
-        } # i
+#           tas <- readNcdf(file_name = fnames_tas[i],
+#                           dim_subset = list(lon = lon_matrix[, lo]))
+#           pr  <- readNcdf(file_name = fnames_pr[i],
+#                           dim_subset = list(lon = lon_matrix[, lo]))
 
-        dir.create(tmp_dir, recursive = TRUE)
-        save(tas_array, file = paste0(tmp_dir, "tas_array_", lo, ".RData"))
-        save(pr_array,  file = paste0(tmp_dir, "pr_array_",  lo, ".RData"))
-      } else {
-        tas_array <- get(load(file = paste0(tmp_dir, "tas_array_", lo, ".RData")))
-        pr_array  <- get(load(file = paste0(tmp_dir, "pr_array_",  lo, ".RData")))
-      }
+#           # Convert units
+#           tas <- k2deg(tas)
+#           pr  <- pr * 60 * 60 * 24
 
-      # Loop through pixels to extract temperature and precipitation
-      for (j in seq_len(nrow(grid_sub))) {
-        print(j)
-        lon_pix <- grid_sub$lon[j]
-        lat_pix <- grid_sub$lat[j]
+#           # Bind array along time dimension
+#           tas_array <- abind(tas_array, tas, use.dnns = TRUE)
+#           pr_array  <- abind(pr_array, pr, use.dnns = TRUE)
+#         } # i
 
-        tas_pix <- tas_array[as.character(lon_pix), as.character(lat_pix), ]
-        pr_pix  <- pr_array[as.character(lon_pix), as.character(lat_pix), ]
+#         dir.create(tmp_dir, recursive = TRUE)
+#         save(tas_array, file = paste0(tmp_dir, "tas_array_", lo, ".RData"))
+#         save(pr_array,  file = paste0(tmp_dir, "pr_array_",  lo, ".RData"))
+#       } else {
+#         tas_array <- get(load(file = paste0(tmp_dir, "tas_array_", lo, ".RData")))
+#         pr_array  <- get(load(file = paste0(tmp_dir, "pr_array_",  lo, ".RData")))
+#       }
 
-        # Assign dates as dimnames of vectors
-        names(tas_pix) <- names(pr_pix) <- dates
+#       # Loop through pixels to extract temperature and precipitation
+#       for (j in seq_len(nrow(grid_sub))) {
+#         print(j)
+#         lon_pix <- grid_sub$lon[j]
+#         lat_pix <- grid_sub$lat[j]
 
-        # Loop through 10-years steps and extract climate
-        for (yy in seq_len(length(eyears[[scens[sc]]]))) {
-          time_idx <- which(
-            eyears[[scens[sc]]][yy] - date_to_year(dates) >= 0 &
-            eyears[[scens[sc]]][yy] - date_to_year(dates) < 20
-            )
-          time_years <- date_to_year(names(tas_pix)[time_idx])
+#         tas_pix <- tas_array[as.character(lon_pix), as.character(lat_pix), ]
+#         pr_pix  <- pr_array[as.character(lon_pix), as.character(lat_pix), ]
 
-          # Calculate monthly climate
-          mclm <- calcMonthlyClimate(
-            lat        = lat_pix,
-            temp       = tas_pix[time_idx],
-            prec       = pr_pix[time_idx],
-            syear      = min(time_years),
-            eyear      = max(time_years),
-            incl_feb29 = TRUE
-            )
-          # Calculate crop calendar
-          ccal <- calcCropCalendars(
-            lon          = lon_pix,
-            lat          = lat_pix,
-            mclimate     = mclm,
-            crop         = "Maize"
-            )
-        } # yy
-      } # j
-    } # lo
-  } # sc
-} # gg
+#         # Assign dates as dimnames of vectors
+#         names(tas_pix) <- names(pr_pix) <- dates
+
+#         # Loop through 10-years steps and extract climate
+#         for (yy in seq_len(length(eyears[[scens[sc]]]))) {
+#           time_idx <- which(
+#             eyears[[scens[sc]]][yy] - date_to_year(dates) >= 0 &
+#             eyears[[scens[sc]]][yy] - date_to_year(dates) < 20
+#             )
+#           time_years <- date_to_year(names(tas_pix)[time_idx])
+
+#           # Calculate monthly climate
+#           mclm <- calcMonthlyClimate(
+#             lat        = lat_pix,
+#             temp       = tas_pix[time_idx],
+#             prec       = pr_pix[time_idx],
+#             syear      = min(time_years),
+#             eyear      = max(time_years),
+#             incl_feb29 = TRUE
+#             )
+#           # Calculate crop calendar
+#           ccal <- calcCropCalendars(
+#             lon          = lon_pix,
+#             lat          = lat_pix,
+#             mclimate     = mclm,
+#             crop         = "Maize"
+#             )
+#         } # yy
+#       } # j
+#     } # lo
+#   } # sc
+# } # gg
 
 # Remove tmp dir
 #unlink(tmp_dir, recursive = TRUE)

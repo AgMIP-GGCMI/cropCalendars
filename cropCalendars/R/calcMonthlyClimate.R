@@ -44,8 +44,7 @@ calcMonthlyClimate <- function(lat        = NULL,
   d_dates <- date_to_doy(dates, skip_feb29 = TRUE)
 
 
-  # Compute PET (Potential ET)
-  cat("Computing daily PET ...\n")
+  # Compute daily PET (Potential ET)
   pet <- NULL
   for (i in seq_len(length(temp))) {
     pet_today <- calcPET(temp = temp[i], lat = lat, day = d_dates[i])
@@ -53,11 +52,8 @@ calcMonthlyClimate <- function(lat        = NULL,
   }
 
   # Compute monthly climate for each year
-  cat("Computing monthly climate ...\n")
-
   mtemp_y <- array(NA, dim = c(nyears, nmonths))
   mprec_y <- mpet_y <- mppet_y <- mtemp_y
-
 
   for (yy in seq_len(nyears)) {
     for (mm in seq_len(nmonths)) {
@@ -74,7 +70,6 @@ calcMonthlyClimate <- function(lat        = NULL,
   }
 
   # Compute 20-years Average
-  cat("Computing climate 20-years mean ...\n")
   mtemp      <- round(apply(mtemp_y, 2, mean), digits = 5)
   mprec      <- round(apply(mprec_y, 2, mean), digits = 5)
   mpet       <- round(apply(mpet_y,  2, mean), digits = 5)
