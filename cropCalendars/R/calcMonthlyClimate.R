@@ -45,11 +45,7 @@ calcMonthlyClimate <- function(lat        = NULL,
 
 
   # Compute daily PET (Potential ET)
-  pet <- NULL
-  for (i in seq_len(length(temp))) {
-    pet_today <- calcPET(temp = temp[i], lat = lat, day = d_dates[i])
-    pet <- c(pet, pet_today)
-  }
+  pet <- mapply(calcPET, temp = temp, lat = lat, day = d_dates)
 
   # Compute monthly climate for each year
   mtemp_y <- array(NA, dim = c(nyears, nmonths))

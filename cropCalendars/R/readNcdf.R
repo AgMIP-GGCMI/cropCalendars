@@ -10,8 +10,8 @@
 #' read entirely.
 #' @param var_name (Optional) Variable name (e.g. "tas"). Needed if the file
 #' contains more than one variable (e.g. temperature, precipitation).
-#' @param verbose (Optional) If TRUE, it prints some useful meta-data (e.g.
-#' dimension names).
+#' @param verbose (Optional) If TRUE, it prints some useful meta-data
+#' (e.g. dimension names).
 #' @import ncdf4
 #' @examples
 #' x1 <- readNcdf(file_name = fn_tas,
@@ -43,7 +43,6 @@ readNcdf <- function(file_name  = NULL,
   } else {
     var_name <- nf$var[[1]]$name
   }
-  cat("\nvar_name: ", var_name)
 
   # Get dimension names and values
   dims     <- unlist(lapply(nf$var[[var_name]]$dim, `[[`, "name"))
@@ -53,8 +52,8 @@ readNcdf <- function(file_name  = NULL,
     dvals             <- ncvar_get(nf, dims[i])
     dim_list[[dname]] <- dvals
   }
-  cat("\ndimensions: ", dims, "\n")
   if (verbose) {
+    cat("\nvar_name: ", var_name, "\ndimensions: ", dims, "\n")
     print(
       lapply(
         dim_list,

@@ -4,7 +4,7 @@
 
 getCropParam <- function(crops          = "all",
                          cropparam_file = NULL,
-                         print_all_par  = FALSE
+                         verbose        = FALSE
                          ) {
   # If not specified, read default parameter file
   if (is.null(cropparam_file)) {
@@ -19,16 +19,11 @@ getCropParam <- function(crops          = "all",
     crop_parameters_all <- subset(crop_parameters_all,
                                   crop_name %in% crops)
   }
-  if (print_all_par) {
+  if (verbose) {
     cat("Importing crop-parameter table ...",
         "----------------------------------",
         sep = "\n")
     print(t(crop_parameters_all))
-  } else {
-    cat("Importing crop-parameter table for ---> ",
-        crop_parameters_all$crop_name,
-        sep = " ")
   }
-
   return(crop_parameters_all)
 }
