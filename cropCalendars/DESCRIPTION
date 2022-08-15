@@ -8,9 +8,11 @@ Maintainer:
 Description: R-package for computing sowing and harvest dates following
     the approaches from Waha et al. (2012) and Minoli et al. (2019).
 Imports:
-    ncdf4
-Suggests:
+    ncdf4,
     data.table
+Suggests:
+    zoo,
+    ggplot2
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
