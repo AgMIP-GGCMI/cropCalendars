@@ -11,7 +11,7 @@ library(ncdf4)
 library(abind)
 library(data.table)
 library(foreach)
-library(cropCalendars, lib.loc = "/home/minoli/Rlib")
+library(cropCalendars)
 library(pryr) # for tracking memory usage
 #library(unix)
 
@@ -25,6 +25,7 @@ setwd(work_dir)
 
 parallel     <- TRUE
 cluster_job  <- TRUE
+plot_results <- TRUE
 
 # Years for which crop calendars should be computed
 ccal_years    <- seq(1601, 2091, by = 10)
@@ -98,6 +99,8 @@ n_lon_chunks <- 45
 # Output directory
 dfout_dir <- paste0(work_dir, "/crop_calendars/DT/", scen, "/", gcm, "/")
 if (!dir.exists(dfout_dir)) dir.create(dfout_dir, recursive = TRUE)
+plot_dir  <- paste0(work_dir, "/crop_calendars/DT/", scen, "/", gcm, "/plots/")
+if (!dir.exists(plot_dir) & plot_results) dir.create(plot_dir, recursive = TRUE)
 
 # ------------------------------------ #
 # Register cluster
@@ -352,21 +355,31 @@ output_df <- foreach(lo        = seq_len(ncol(lon_matrix)),
 } # lo
 
 cat("\nFinished foreach loop\n")
+# Always close worker nodes, if running in parallel mode
+if(parallel==T) {
+  stopCluster(cl)
+}
 
+# ------------------------------------ #
+# Save data table
 DT <- data.table(output_df)
-
-# Save data table ----
 fnout <- paste0(dfout_dir, "DT_output_crop_calendars_",
                 cro, "_", gcm, "_", scen, "_", syear, "_", eyear, ".Rdata")
 cat("\n", fnout)
 save(DT, file = fnout)
 
-# End of script, always close worker nodes if run in parallel mode ----
-#______________________________________________________________________#
-if(parallel==T) {
-  stopCluster(cl)
+
+# Plot maps
+if (plot_results) {
+  fnout <- paste0(dfout_dir, "DT_output_crop_calendars_",
+                  cro, "_", gcm, "_", scen, "_", syear, "_", eyear, ".Rdata")
+  fnpdf <- paste0(plot_dir, "map_crop_calendars_",
+                  cro, "_", gcm, "_", scen, "_", syear, "_", eyear, ".pdf")
+  plotMapCropCalendars(fnDT = fnout, fnPDF = fnpdf)
 }
 
+# ------------------------------------ #
+# Done!
 endtime <- Sys.time()
 print(endtime)
 
