@@ -26,15 +26,6 @@ setwd(work_dir)
 parallel     <- TRUE
 cluster_job  <- TRUE
 
-# NO
-# ncpus        <- 64
-# n_lon_chunks <- 48
-
-# OK
-#sbatch --nodes=3 --ntasks-per-node=16
-ncpus        <- 32
-n_lon_chunks <- 48
-
 # Years for which crop calendars should be computed
 ccal_years    <- seq(1601, 2091, by = 10)
 # Number of years for average climate
@@ -50,7 +41,7 @@ gcms <- c(
   "MPI-ESM1-2-HR",
   "MRI-ESM2-0",
   "UKESM1-0-LL"
-    )
+)
 enms <- c(
     "GFDL-ESM4"     = "r1i1p1f1",
     "IPSL-CM6A-LR"  = "r1i1p1f1",
@@ -93,13 +84,19 @@ print(args)
 
 # ------------------------------------ #
 # Select variable, crop, model, year
-gcm  <- args[1]
-scen <- args[2]
-cro  <- args[3]
-year <- as.numeric(args[4])
+gcm    <- args[1]
+scen   <- args[2]
+cro    <- args[3]
+year   <- as.numeric(args[4])
+nnodes <- as.numeric(args[5])
+ntasks <- as.numeric(args[6])
+
+ncpus        <- ntasks * nnodes
+n_lon_chunks <- 45
+# --nodes=1 --ntasks-per-node=16 --exclusive
 
 # Output directory
-dfout_dir <- paste0(work_dir, "/crop_calendars/DT/", scen, "/")
+dfout_dir <- paste0(work_dir, "/crop_calendars/DT/", scen, "/", gcm, "/")
 if (!dir.exists(dfout_dir)) dir.create(dfout_dir, recursive = TRUE)
 
 # ------------------------------------ #
@@ -111,7 +108,7 @@ if(parallel == TRUE) {
   # by SLURM.
   # By default, R can see all CPUs, including those not allocated to us.
   #ncpus <- as.integer(Sys.getenv("SLURM_JOB_CPUS_PER_NODE"))
-  if (!exists("ncpus")) ncpus <- 48
+  if (!exists("ncpus")) ncpus <- 16
   cl <- makeCluster(ncpus)
   registerDoParallel(cl)
   getDoParName()
@@ -267,7 +264,7 @@ output_df <- foreach(lo        = seq_len(ncol(lon_matrix)),
                      ) %dopar% {
 
   # Log file to track foreach parallel loop
-  log_file <- paste0(dfout_dir, "log_", lo,".txt")
+  log_file <- paste0(dfout_dir, "log_", lo, "_", syear, "_", eyear, ".txt")
   unlink(log_file)
   sink(log_file, append = TRUE)
   cat("\nDoing ", lo, " of ", ncol(lon_matrix), "\n")
@@ -347,8 +344,7 @@ output_df <- foreach(lo        = seq_len(ncol(lon_matrix)),
       )
     ccal_df <- rbind(ccal_df, ccal)
 
-  # Track memory used
-  print(pryr::mem_used())
+    print(paste(j, "of", nrow(grid_sub)))
 
   } # j
   unlink(log_file)
