@@ -87,20 +87,6 @@ if (scen == "2015gs") {
 
 }
 
-# # For Testing!
-#   FYnc <- 2015
-#   LYnc <- 2100
-
-#   # Sowing and cultivar to change every 10 years
-#   SYs <- seq(2071, 2091, by = 10) # Start of the period
-#   EYs <- seq(2080, 2100, by = 10) # End of the period
-#   # Computing sowing and harvest dates based on preceding 30-years climate
-#   FYs <- seq(2041, 2061, by = 10) # First year DT file (output of main.R)
-#   LYs <- seq(2070, 2090, by = 10) # Last  year DT file (output of main.R)
-
-#   nhist <- length(LYs[LYs < 2015]) # number of historical time slices
-#   HYs <- c(rep("historical", nhist), rep(scen, length(SYs) - nhist))
-
 # time dimension ncdf files
 YEARSnc  <- FYnc:LYnc
 NYEARSns <- length(YEARSnc)
@@ -118,21 +104,6 @@ ggdir  <- "/p/projects/macmit/data/GGCMI/AgMIP.input/phase3/crop_calendar/"
 if (!dir.exists(ncdir )) dir.create(ncdir,  recursive = T)
 if (!dir.exists(pldir )) dir.create(pldir,  recursive = T)
 if (!dir.exists(csvdir)) dir.create(csvdir, recursive = T)
-
-# Crop Names: ----
-crop_ls <- list(all_low = c("winter_wheat", "spring_wheat", "maize", "rice1", "rice2",
-                            "soybean", "millet", "sorghum","peas","sugar_beat",
-                            "cassava","rape_seed","sunflower","nuts","sugarcane"),
-                rb_cal  = c("Winter_Wheat", "Spring_Wheat", "Maize", "Rice", NA,
-                            "Soybean", NA, "Sorghum", NA, NA,
-                            NA, NA, NA, NA, NA),
-                ggcmi   = c("wwh","swh","mai","ri1","ri2",
-                            "soy","mil","sor","pea","sgb",
-                            "cas","rap","sun","nut","sgc"))
-
-irri_ls <- list(all_low = c("rainfed", "irrigated"),
-                rb_cal  = c("Rainfed", "Irrigated"),
-                ggcmi   = c("rf", "ir"))
 
 # ------------------------------------------------------#
 # Assemble crop calendar time series from individual DT files

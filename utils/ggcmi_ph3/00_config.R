@@ -33,6 +33,7 @@ clm_avg_years <- 30
 
 climate_dir <- paste0("/p/projects/macmit/data/GGCMI/AgMIP.input/",
                       "phase3/climate_land_only/")
+isimip3b.path <- "/p/projects/lpjml/input/scenarios/ISIMIP3b/" # .clm climate
 
 # Climate input files
 gcms <- c(
@@ -107,6 +108,27 @@ grid_df <- as.data.frame(
     dsize = 2, scalar = 0.01)
   )
 names(grid_df) <- c("lon", "lat")
+
+# ------------------------------------------------------#
+# Crop Names: ----
+crop.ls <- list(all_low = c("winter_wheat", "spring_wheat", "maize", "rice1", "rice2",
+                            "soybean", "millet", "sorghum","peas","sugar_beat",
+                            "cassava","rape_seed","sunflower","nuts","sugarcane"),
+                rb_cal  = c("Winter_Wheat", "Spring_Wheat", "Maize", "Rice", NA,
+                            "Soybean", NA, "Sorghum", NA, NA,
+                            NA, NA, NA, NA, NA),
+                ggcmi   = c("wwh","swh","mai","ri1","ri2",
+                            "soy","mil","sor","pea","sgb",
+                            "cas","rap","sun","nut","sgc"),
+                # vernal: yes_all = vern. forced in all grid cells;
+                #         yes = only if conditions are met, see wintercrop()
+                vernal  = c("yes_all","no","no","no","no",
+                            "no","no","no","no","no",
+                            "no","yes","no","no","no"))
+
+irri.ls <- list(all_low = c("rainfed", "irrigated"),
+                rb_cal  = c("Rainfed", "Irrigated"),
+                ggcmi   = c("rf", "ir"))
 
 # ------------------------------------ #
 cat("\nConfigs imported.\n")

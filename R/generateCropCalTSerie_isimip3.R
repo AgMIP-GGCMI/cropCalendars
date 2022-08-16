@@ -1,15 +1,14 @@
-# Description:
-# generate.cropcal.timeserie.isimip3() assembles
-#  crop calendars of individual time slices (stored in data.tables)
-#  into a continuous annual time series and saves it in ncdf file.
-
-# The function performs some filtering of crop calendar dates to avoid
-#  discontinuities and to replace default dates with observed dates.
-
-# The function has arguments, as all variables should be defined in the
-#  script that calls this function. This is non-optimal, but fine as
-#  the function is very specific for a single dataset (isimip3)
-
+#' @title Generate an annual crop-calendar time series
+#'
+#' @description This function assembles
+#'  crop calendars of individual time slices (stored in data.tables)
+#'  into a continuous annual time series and saves it in ncdf file.
+#' The function performs some filtering of crop calendar dates to avoid
+#'  discontinuities and to replace default dates with observed dates.
+#' The function has arguments, as all variables should be defined in the
+#'  script that calls this function. This is non-optimal, but fine as
+#'  the function is very specific for a single dataset (isimip3).
+#' @export
 generateCropCalTSerie_isimip3 <- function(
     gcm        = NULL,
     scen       = NULL,
