@@ -1,4 +1,4 @@
-# cropCalendars
+# cropCalendars <a href=''><img src='./inst/img/logo_0.1.0.png' align="right" height="139" /></a>
 
 R-package for simulating crop calendars and their adaptation following the approaches from Waha et al. (2012) and Minoli et al. (2019).
 

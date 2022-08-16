@@ -2,7 +2,6 @@
 #' for the LPJmL model.
 #'
 #' @export
-
 generatePHUTserie_isimip3 <- function(
     ncdir         = NULL,
     gcm           = NULL,
@@ -17,11 +16,11 @@ generatePHUTserie_isimip3 <- function(
 
 ) {
 
-  cr <- which(crop.ls[["ggcmi"]] == cro)
-  ir <- which(irri.ls[["ggcmi"]] == irri)
+  cr <- which(crop_ls[["ggcmi"]] == cro)
+  ir <- which(irri_ls[["ggcmi"]] == irri)
 
   ncfname <- paste0(ncdir,
-                    crop.ls[["ggcmi"]][cr], "_", irri.ls[["ggcmi"]][ir],
+                    crop_ls[["ggcmi"]][cr], "_", irri_ls[["ggcmi"]][ir],
                     "_", gcm, "_", scen, "_", FYnc, "-", LYnc,
                     "_ggcmi_ph3_rule_based_crop_calendar.nc4")
   cat("\nreading:", ncfname)
@@ -31,7 +30,7 @@ generatePHUTserie_isimip3 <- function(
   # Get Crop Parameters ----
   if (is.null(crop_par_file)) {
     crop_par_file <- system.file("extdata", "lpjml_crop_parameters_ggcmi_ph3.csv",
-                                package = "cropCalendars", "mustWork" = TRUE)
+                                package = "cropCalendars", mustWork = TRUE)
   }
   croppar    <- subset(read.csv(crop_par_file, header = T, stringsAsFactors = F),
                        crop == cro)
@@ -76,8 +75,8 @@ generatePHUTserie_isimip3 <- function(
     # Loop through grid cells ----
     for (i in 1:NCELLS) {
 
-      ilo <- which(lons == grid$lon[i])
-      ila <- which(lats == grid$lat[i])
+      ilo <- which(lons == grid_df$lon[i])
+      ila <- which(lats == grid_df$lat[i])
 
       sdate.avg <- as.integer(mean(sdate[ilo, ila, ]))
       hdate.avg <- as.integer(mean(hdate[ilo, ila, ]))
@@ -100,7 +99,7 @@ generatePHUTserie_isimip3 <- function(
 
       # ------------------------------------------------------#
       # Test if it is winter crop ----
-      if (crop.ls[["vernal"]][cr] == "yes") {
+      if (crop_ls[["vernal"]][cr] == "yes") {
 
         wcrop <- wintercrop(start =   sdate.avg,
                             end   =   hdate.avg,
@@ -114,7 +113,7 @@ generatePHUTserie_isimip3 <- function(
 
       # ------------------------------------------------------#
       # If Vernal-crop:
-      if (crop.ls[["vernal"]][cr] == "yes_all" | wcrop == 1) {
+      if (crop_ls[["vernal"]][cr] == "yes_all" | wcrop == 1) {
 
         # Calculate Vernalization Requirements ----
         vd <- calc.vd(temp_mean_month  =         mtemp,
@@ -146,9 +145,9 @@ generatePHUTserie_isimip3 <- function(
       # Calculate Phenological Heat Unit Requirements ----
 
       # If Vernal-crop use vernal-thermal model and return negative phu
-      if (crop.ls[["vernal"]][cr] == "yes_all" | wcrop == 1) {
+      if (crop_ls[["vernal"]][cr] == "yes_all" | wcrop == 1) {
 
-        phu <- calc.phu(sdate       = sdate.avg,
+        phu <- calcPHU(sdate       = sdate.avg,
                         hdate       = hdate.avg,
                         mdt         =     dtemp,
                         vern_factor =       vrf,
@@ -160,7 +159,7 @@ generatePHUTserie_isimip3 <- function(
         # else use Thermal model
       } else {
 
-        phu <- calc.phu(sdate       = sdate.avg,
+        phu <- calcPHU(sdate       = sdate.avg,
                         hdate       = hdate.avg,
                         mdt         =     dtemp,
                         vern_factor =       vrf,
@@ -181,11 +180,15 @@ generatePHUTserie_isimip3 <- function(
 
   } # yy
 
-  save(phu.cube, file = paste0(working.dir, "compute_phu/tmp/",
-                               crop.ls[["ggcmi"]][cr], "_",
-                               irri.ls[["ggcmi"]][ir], "_",
-                               gcm, "_", scen, "_", min(SYs), "-", max(EYs),
-                               "_ggcmi_ph3_rule_based_phu.Rdata"))
+  tmp_dir <- paste0(work_dir, "/tmp/")
+  if (!dir.exists(tmp_dir)) dir.create(tmp_dir)
+
+  fn <- paste0(tmp_dir,
+               crop_ls[["ggcmi"]][cr], "_",
+               irri_ls[["ggcmi"]][ir], "_",
+               gcm, "_", scen, "_", FYnc, "-", LYnc,
+               "_ggcmi_ph3_rule_based_phu.Rdata")
+  save(phu.cube, file = fn)
 
   # Repeat same phu value for the entire time period (for 2015gs scenario)
   if (max(LYs) != LYnc) {
@@ -193,11 +196,7 @@ generatePHUTserie_isimip3 <- function(
     for (j in seq_len(length(ys))) {
       phu.cube[, , ys[j]] <- phu.annual
     }
-      save(phu.cube, file = paste0(working.dir, "compute_phu/tmp/",
-                               crop.ls[["ggcmi"]][cr], "_",
-                               irri.ls[["ggcmi"]][ir], "_",
-                               gcm, "_", scen, "_", FYnc, "-", LYnc,
-                               "_ggcmi_ph3_rule_based_phu.Rdata"))
+      save(phu.cube, file = fn)
   }
 
 
@@ -210,7 +209,7 @@ generatePHUTserie_isimip3 <- function(
   # ------------------------------------------------------#
 
   ncfname <- paste0(ncdir,
-                    crop.ls[["ggcmi"]][cr], "_", irri.ls[["ggcmi"]][ir],
+                    crop_ls[["ggcmi"]][cr], "_", irri_ls[["ggcmi"]][ir],
                     "_", gcm, "_", scen, "_", FYnc, "-", LYnc,
                     "_ggcmi_ph3_rule_based_phu.nc4")
   cat("\nwriting:", ncfname)
@@ -238,7 +237,7 @@ generatePHUTserie_isimip3 <- function(
   ncatt_put(ncout, "time", "axis", "T")
 
   ncatt_put(ncout, 0, "Crop",
-            paste0(crop.ls[["ggcmi"]][cr], "_", irri.ls[[ir]]["ggcmi"]))
+            paste0(crop_ls[["ggcmi"]][cr], "_", irri_ls[[ir]]["ggcmi"]))
   ncatt_put(ncout, 0, "Institution",
             "Potsdam Institute for Climate Impact Research (PIK), Germany")
   history <- paste("Created by Sara Minoli on", date(), sep = " ")
@@ -246,6 +245,8 @@ generatePHUTserie_isimip3 <- function(
 
   # Close the file, writing data to disk
   nc_close(ncout)
+
+  unlink(fn)
 
 }
 
