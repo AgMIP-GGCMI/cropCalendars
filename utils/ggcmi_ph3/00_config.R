@@ -111,7 +111,7 @@ names(grid_df) <- c("lon", "lat")
 
 # ------------------------------------------------------#
 # Crop Names: ----
-crop.ls <- list(all_low = c("winter_wheat", "spring_wheat", "maize", "rice1", "rice2",
+crop_ls <- list(all_low = c("winter_wheat", "spring_wheat", "maize", "rice1", "rice2",
                             "soybean", "millet", "sorghum","peas","sugar_beat",
                             "cassava","rape_seed","sunflower","nuts","sugarcane"),
                 rb_cal  = c("Winter_Wheat", "Spring_Wheat", "Maize", "Rice", NA,
@@ -126,7 +126,7 @@ crop.ls <- list(all_low = c("winter_wheat", "spring_wheat", "maize", "rice1", "r
                             "no","no","no","no","no",
                             "no","yes","no","no","no"))
 
-irri.ls <- list(all_low = c("rainfed", "irrigated"),
+irri_ls <- list(all_low = c("rainfed", "irrigated"),
                 rb_cal  = c("Rainfed", "Irrigated"),
                 ggcmi   = c("rf", "ir"))
 

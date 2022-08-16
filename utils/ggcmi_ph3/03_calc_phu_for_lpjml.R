@@ -96,7 +96,7 @@ ncdir  <- paste0(output_dir, "crop_calendars/ncdf/", gcm, "/", scen, "/")
 # ------------------------------------------------------#
 # Compute PHUs and Write ncdfs
 
-generateCropCalTSerie_isimip3(
+generatePHUTserie_isimip3(
     ncdir         = ncdir,
     gcm           = gcm,
     scen          = scen,

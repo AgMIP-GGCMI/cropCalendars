@@ -9,10 +9,11 @@ scens=('historical' 'ssp585' 'ssp370' 'ssp126' '2015gs')
 crops=('wwh' 'swh' 'mai' 'ri1' 'ri2' 'soy' 'mil' 'sor' 'pea' 'sgb' 'cas' 'rap' 'sun' 'nut' 'sgc')
 irrigs=('rf' 'ir')
 
-#gcms=('GFDL-ESM4')
-scens=('2015gs')
-crops=('ri2')
-#irrigs=('rf')
+
+gcms=('GFDL-ESM4')
+scens=('ssp585')
+crops=('mai')
+irrigs=('rf')
 
 for gc in "${!gcms[@]}";do
   for sc in "${!scens[@]}";do

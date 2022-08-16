@@ -8,15 +8,16 @@
 
 rm(list = ls(all = TRUE))
 
-starttime <- Sys.time() # Track run-time
-print(starttime)
+stime <- Sys.time() # Track run-time
+print(stime)
 
 # ------------------------------------ #
 # General settings
-work_dir <- setwd(paste(
+work_dir <- paste(
   "/home/minoli/crop_calendars_gitlab/r_package/cropCalendars/utils/ggcmi_ph3/"
-))
-source(paste0(work_dir, "/00_config.R"))
+)
+setwd(work_dir)
+source("./00_config.R")
 
 makeplot <- TRUE
 
