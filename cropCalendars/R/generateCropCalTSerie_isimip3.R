@@ -80,7 +80,8 @@ generateCropCalTSerie_isimip3 <- function(
       fname <- paste0(paste0(output_dir, HYs[tt], "/", gcm, "/"),
                       "DT_output_crop_calendars_", crop_ls[["rb_cal"]][cr],
                       "_", gcm, "_", HYs[tt], "_", FYs[tt], "_", LYs[tt], ".Rdata")
-      DT <- get(load(fname))[irrigation == irri_ls[["rb_cal"]][ir]] # subset irrig
+      DT <- get(load(fname))
+      DT <- DT[DT$irrigation == irri_ls[["rb_cal"]][ir], ] # subset irrig
 
     } else {
 
@@ -90,7 +91,8 @@ generateCropCalTSerie_isimip3 <- function(
       fname <- paste0(paste0(output_dir, HYs[1], "/"),
                       "DT_output_crop_calendars_", crop_ls[["rb_cal"]][1],
                       "_", gcm, "_", HYs[1], "_", FYs[1], "_", LYs[1], ".Rdata")
-      DT <- get(load(fname))[irrigation == irri_ls[["rb_cal"]][ir]] # subset irrig
+      DT <- get(load(fname))
+      DT <- DT[DT$irrigation == irri_ls[["rb_cal"]][ir], ] # subset irrig
 
       # Replace all values with dummy number, except sowing_month set to default
       DT$crop             <- crop_ls[["all_low"]][cr]
@@ -133,8 +135,6 @@ generateCropCalTSerie_isimip3 <- function(
 
   } # tt
 
-  print(Sys.time() - stime)
-
   # Loop through pixels and filter + interpolate time series
   # ------------------------------------------------------#
 
@@ -163,17 +163,17 @@ generateCropCalTSerie_isimip3 <- function(
 
 
   # --------------------------#
-  for (i in 1:nrow(DT)) {
-    #for (i in 1:1000) {
-    if(i%%1e3==0) cat(i, "\t") #else cat(".")
+  for (i in seq_len(nrow(DT))) {
+
+    if (i %% 1e3 == 0) cat(i, "\t") #else cat(".")
 
     ilat <- which(lats == DT$lat[i])
     ilon <- which(lons == DT$lon[i])
 
     sdate <- ARsd[ilon, ilat, ]   # sowing date
-    seast <- ARst[ilon, ilat, ]   # seasonality type
+    seast <- as.numeric(as.factor(ARst[ilon, ilat, ]))   # seasonality type
     hdate <- ARhd[ilon, ilat, ]   # harvest date
-    hreas <- ARhr[ilon, ilat, ]   # harvest reason
+    hreas <- as.numeric(as.factor(ARhr[ilon, ilat, ]))   # harvest reason
     ddate <- ARdd[ilon, ilat, ]   # default date == 0
     sggcm <- sdggcmi[ilon, ilat] # sowing date ggcmi
     hggcm <- hdggcmi[ilon, ilat] # harvest date ggcmi
@@ -222,8 +222,8 @@ generateCropCalTSerie_isimip3 <- function(
     large.change.idx <- c(0, which(abs(diff(sdate.r3)) > 90),
                           length(sdate.m3)) + 1
 
-    for (ii in 1:(length(large.change.idx)-1)) {
-      sdate.m4[large.change.idx[ii]:(large.change.idx[ii+1]-1)] <- ii
+    for (ii in 1:(length(large.change.idx) - 1)) {
+      sdate.m4[large.change.idx[ii]:(large.change.idx[ii + 1] - 1)] <- ii
     }
 
 
@@ -301,7 +301,7 @@ generateCropCalTSerie_isimip3 <- function(
     if ((makeplot == TRUE) &
          (irri_ls[["ggcmi"]][ir] == "rf" &
           crop_ls[["ggcmi"]][cr] %in% c("mai", "whe")) &
-         (DT$pixelnr[i] %in% seq(1, 67420, by = 360 * 5))) {
+          i %% 1e3 == 0) {
       # File name
       pfile <- paste(crop_ls[["ggcmi"]][cr], irri_ls[["ggcmi"]][ir],
                      scen, gcm, DT$pixelnr[i], lons[ilon], lats[ilat], sep="_")
@@ -363,7 +363,7 @@ generateCropCalTSerie_isimip3 <- function(
 
   # Write count.dt in csv file to record which pixels have replaced values ----
   # ------------------------------------------------------#
-  if ( any(count.dt[i,]) ) { count <- count + 1 }
+  if ( any(unlist(count.dt[i, 4:7]))) { count <- count + 1 }
   cat("\nNr. of pixels for which sdate or hdate have been replaced: ", count,"\n")
 
   write.csv(count.dt,
@@ -372,8 +372,6 @@ generateCropCalTSerie_isimip3 <- function(
                    "_", gcm, "_", scen, "_", min(years_nc), "-", max(years_nc),
                    "_pixels_with_filtered_values.csv"))
 
-
-  print(Sys.time() - stime)
 
   # Write NCDF file: ----
   # ------------------------------------------------------#

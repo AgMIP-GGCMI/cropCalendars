@@ -87,6 +87,20 @@ if (scen == "2015gs") {
 
 }
 
+# # For Testing!
+#   FYnc <- 2015
+#   LYnc <- 2100
+
+#   # Sowing and cultivar to change every 10 years
+#   SYs <- seq(2071, 2091, by = 10) # Start of the period
+#   EYs <- seq(2080, 2100, by = 10) # End of the period
+#   # Computing sowing and harvest dates based on preceding 30-years climate
+#   FYs <- seq(2041, 2061, by = 10) # First year DT file (output of main.R)
+#   LYs <- seq(2070, 2090, by = 10) # Last  year DT file (output of main.R)
+
+#   nhist <- length(LYs[LYs < 2015]) # number of historical time slices
+#   HYs <- c(rep("historical", nhist), rep(scen, length(SYs) - nhist))
+
 # time dimension ncdf files
 YEARSnc  <- FYnc:LYnc
 NYEARSns <- length(YEARSnc)
@@ -126,18 +140,18 @@ irri_ls <- list(all_low = c("rainfed", "irrigated"),
 # Save ncdf files
 
 generateCropCalTSerie_isimip3(
-    gcm      = gcm,
-    scen     = scen,
-    cro      = cro,
-    irri     = irri,
-    SYs      = SYs,
-    EYs      = EYs,
-    HYs      = HYs,
-    years_nc = YEARSnc,
-    crop_ls  = crop_ls,
-    irri_ls  = irri_ls,
-    output_dir = paste0(output_dir, "/crop_calendars/DT/"),
-    makeplot = FALSE
+    gcm        = gcm,
+    scen       = scen,
+    cro        = cro,
+    irri       = irri,
+    SYs        = SYs,
+    EYs        = EYs,
+    HYs        = HYs,
+    years_nc   = YEARSnc,
+    crop_ls    = crop_ls,
+    irri_ls    = irri_ls,
+    output_dir = dtdir,
+    makeplot   = FALSE
 )
 
 # --------------------------#
