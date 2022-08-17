@@ -10,7 +10,8 @@
 #' @param croppar_file Crop parameter file. If not specified, the default one is
 #' used.
 #' @seealso calcMonthlyClimate
-#'
+#' @export
+
 calcCropCalendars <- function(lon          = NULL,
                               lat          = NULL,
                               mclimate     = NULL,
@@ -23,9 +24,10 @@ calcCropCalendars <- function(lon          = NULL,
     croppar_file <- system.file("extdata", "crop_parameters.csv",
                                 package = "cropCalendars", "mustWork" = TRUE)
   }
-  crop_parameters <- getCropParam(crops          = crop,
-                                  cropparam_file = croppar_file
-                                  )
+  crop_parameters <- getCropParam(
+    crops          = crop,
+    cropparam_file = croppar_file
+  )
 
   # Get monthly weather data of the grid cell
   mtemp      <- mclimate$mtemp

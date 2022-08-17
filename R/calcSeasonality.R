@@ -1,4 +1,14 @@
-#' @title Calculate seasonality type (Waha et al., 2012)
+#' @title Calculate seasonality type
+#'
+#' @description Calculate seasonality type based on average monthly climate
+#' as from Waha et al. (2012).
+#'
+#' @param monthly_temp Numeric vector of length 12. Average (e.g. 20-years)
+#' monthly mean temperatures (degree Celsius).
+#' @param monthly_prec Numeric vector of length 12. Average (e.g. 20-years)
+#' monthly cumulative precipitation (mm).
+#' @param temp_min Threshold of temperature of the coldest month
+#' (degree Celsius). Default value is 10.
 #'
 #' @export
 calcSeasonality <- function(monthly_temp,
