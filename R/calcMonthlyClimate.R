@@ -4,13 +4,13 @@
 #' of the rule-based crop calendars (Waha et al., 2012; Minoli et al., 2019)
 #'
 #' @param lat latitude (decimal value)
-#' @param temp daily temperature (degree Celsius) for a number of years. It should be passed
-#' in form of a vector.
-#' @param prec daily precipitation for a number of years. It should be passed
-#' in form of a vector.
+#' @param temp daily temperature (degree Celsius) for a number of years
+#' (syear:eyear). It should be passed in form of a vector.
+#' @param prec daily precipitation (mm) for a number of years (syear:eyear).
+#' It should be passed in form of a vector.
 #' @param syear start year in the climate time series.
-#' @param eyear end yeat in the climate time series.
-#' @param incl_feb29 time series include February 29th in leap years?
+#' @param eyear end year in the climate time series.
+#' @param incl_feb29 Does the time series include February 29th in leap years?
 #' @examples
 #' d_temp <- matrix(rnorm(365*3, 15), nrow = 3)
 #' d_prec <- matrix(rnorm(365*3, 3, 50), nrow = 3)

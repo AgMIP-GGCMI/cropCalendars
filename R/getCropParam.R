@@ -1,5 +1,15 @@
 #' @title Import crop parameter table
 #'
+#' @param crops Character vector of crop names. Names should correspond to
+#' those in the crop_name column of the cropparam_file. If "all", returns all
+#' crops present in the table.
+#' @param cropparam_file CSV file containing a table with the crop parameters
+#' necessary for calculating climate-driven crop calendars. If NULL, the default
+#' file ./inst/extdata/crop_parameters.csv is read.
+#' @param verbose If TRUE it prints the parameters.
+#'
+#' @return Crop parameters as a data.frame.
+#'
 #' @export
 
 getCropParam <- function(crops          = "all",
