@@ -91,6 +91,7 @@ readNcdf <- function(file_name  = NULL,
 
     # Read data from ncdf and assign dimnames to array
     nc           <- ncvar_get(nf, var_name, start = st, count = ct)
+    dim(nc)      <- ct
     dimnames(nc) <- dim_list_sub
   }
   return(nc)
