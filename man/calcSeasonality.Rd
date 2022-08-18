@@ -2,10 +2,21 @@
 % Please edit documentation in R/calcSeasonality.R
 \name{calcSeasonality}
 \alias{calcSeasonality}
-\title{Calculate seasonality type (Waha et al., 2012)}
+\title{Calculate seasonality type}
 \usage{
 calcSeasonality(monthly_temp, monthly_prec, temp_min = 10)
 }
+\arguments{
+\item{monthly_temp}{Numeric vector of length 12. Average (e.g. 20-years)
+monthly mean temperatures (degree Celsius).}
+
+\item{monthly_prec}{Numeric vector of length 12. Average (e.g. 20-years)
+monthly cumulative precipitation (mm).}
+
+\item{temp_min}{Threshold of temperature of the coldest month
+(degree Celsius). Default value is 10.}
+}
 \description{
-Calculate seasonality type (Waha et al., 2012)
+Calculate seasonality type based on average monthly climate
+as from Waha et al. (2012).
 }

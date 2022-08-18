@@ -2,17 +2,21 @@
 % Please edit documentation in R/isWinterCrop.R
 \name{isWinterCrop}
 \alias{isWinterCrop}
-\title{Tests if given season should be classified as winter crop}
+\title{Tests if a given growing season should be classified as winter crop}
 \usage{
-isWinterCrop(start, end, tcm, lat)
+isWinterCrop(start = NULL, end = NULL, tcm = NULL, lat = NULL)
 }
 \arguments{
 \item{start}{Sowing date as day of the year (DOY)}
 
 \item{end}{Harvest (or maturity) date as day of the year (DOY)}
+
+\item{tcm}{Temperature of the coldest month (deg C)}
+
+\item{lat}{Latitude (decimal degrees)}
 }
 \description{
-Tests if given season should be classified as winter crop
+Tests if a given growing season should be classified as winter crop
 }
 \details{
 This is the rule suggested by Portman et al. 2010, slightly

@@ -26,7 +26,7 @@ if (cluster_job == TRUE) {
   options(echo = FALSE) # if you want see commands in output file
   args <- commandArgs(trailingOnly = TRUE)
 } else {
-  args <- c('UKESM1-0-LL', 'ssp585', 'Maize', '2091')
+  args <- c('GFDL-ESM4', 'historical', 'Maize', '2011')
 }
 print(args)
 

@@ -6,6 +6,12 @@
 \usage{
 calcDoyCrossThreshold(monthly_value, threshold)
 }
+\arguments{
+\item{monthly_value}{numeric vector of length 12 representing monthly value
+of a variable.}
+
+\item{threshold}{numeric value representing a threshold.}
+}
 \description{
 Calculate days where thresholds are crossed from monthly values
 }

@@ -2,13 +2,17 @@
 % Please edit documentation in R/calcGrowingPeriod.R
 \name{calcGrowingPeriod}
 \alias{calcGrowingPeriod}
-\title{Calculate growing-period duration}
+\title{Calculate growing-period length}
 \usage{
 calcGrowingPeriod(sowing, harvest, max_time_unit)
 }
 \arguments{
+\item{sowing}{numerical value 1:365 (DOY) or 1:12 (month)}
+
+\item{harvest}{numerical value 1:365 (DOY) or 1:12 (month)}
+
 \item{max_time_unit}{e.g. 365 (days), 12 (month)}
 }
 \description{
-Calculate growing-period duration
+Calculates growing period (days) from sowing to harvest.
 }

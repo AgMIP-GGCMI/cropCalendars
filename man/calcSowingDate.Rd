@@ -6,6 +6,16 @@
 \usage{
 calcSowingDate(croppar, monthly_temp, monthly_ppet, seasonality, lat)
 }
+\arguments{
+\item{monthly_temp}{Numeric vector of length 12. Average (e.g. 20-years)
+monthly mean temperatures (degree Celsius).}
+
+\item{monthly_ppet}{Numeric vector of length 12. Average (e.g. 20-years)
+monthly P/PET ratio.}
+
+\item{seasonality}{character value indicating the seasonality type as
+computed by calcSeasonality}
+}
 \description{
 Calculate sowing date (Waha et al., 2012)
 }

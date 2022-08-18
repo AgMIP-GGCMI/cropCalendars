@@ -6,6 +6,10 @@
 \usage{
 calcDoyWetMonth(monthly_value)
 }
+\arguments{
+\item{monthly_value}{numeric vector of length 12 representing monthly
+value of mppet as calculated by calcMonthlyClimate.}
+}
 \description{
 Find first day of 120 wettest days, calculated as the maximum
 120-days cumulative sum of the precipitation to potential evapotranspiration

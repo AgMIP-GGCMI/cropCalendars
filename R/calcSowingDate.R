@@ -1,5 +1,11 @@
 #' @title Calculate sowing date (Waha et al., 2012)
 #'
+#' @param monthly_temp Numeric vector of length 12. Average (e.g. 20-years)
+#' monthly mean temperatures (degree Celsius).
+#' @param monthly_ppet Numeric vector of length 12. Average (e.g. 20-years)
+#' monthly P/PET ratio.
+#' @param seasonality character value indicating the seasonality type as
+#' computed by calcSeasonality
 #' @export
 calcSowingDate <- function(croppar,
                            monthly_temp,

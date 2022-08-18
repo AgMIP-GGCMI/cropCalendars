@@ -4,21 +4,47 @@
 \alias{calcMonthlyClimate}
 \title{Calculate monthly climate}
 \usage{
-calcMonthlyClimate(lat, temp, prec, syear, eyear)
+calcMonthlyClimate(
+  lat = NULL,
+  temp = NULL,
+  prec = NULL,
+  syear = NULL,
+  eyear = NULL,
+  incl_feb29 = TRUE
+)
 }
 \arguments{
 \item{lat}{latitude (decimal value)}
 
-\item{temp}{daily precipitation for a number of years. It should be passed
-in form of a matrix with dimensions [nyears, 365].}
+\item{temp}{daily temperature (degree Celsius) for a number of years
+(syear:eyear). It should be passed in form of a vector.}
+
+\item{prec}{daily precipitation (mm) for a number of years (syear:eyear).
+It should be passed in form of a vector.}
 
 \item{syear}{start year in the climate time series.}
 
-\item{eyear}{end yeat in the climate time series.}
+\item{eyear}{end year in the climate time series.}
+
+\item{incl_feb29}{Does the time series include February 29th in leap years?}
+}
+\value{
+list of five vectors of length 12:
+mtemp, mprec, mpet, mppet, mppet_diff.
 }
 \description{
 Calculate monthly climate variables needed for the computation
-of the rule-based crop calendars (Waha et al., 2012; Minoli et al., 2019)
+of the rule-based crop calendars (Waha et al., 2012; Minoli et al., 2019):
+average monthly mean temperature (mtemp);
+average monthly cumulative precipitation (mprec);
+average monthy cumulative potential evapotranspiration (mpet);
+dryness index 1, mprec-to-mpet ratio (mppet);
+dryness index 2, difference of mppet of two consecutive months (mppet_diff).
+P-to-PET (mppet) ratio indicates the water surplus or deficit with respect to
+the plant water demand; P-to-PET ratio difference (ppet_diff) indicates the
+monthly trend in moisture conditions, if mppet_diff[m] > 0,
+the trend is declining, indicating that the following month (m + 1) is
+dryer than month m.
 }
 \examples{
 d_temp <- matrix(rnorm(365*3, 15), nrow = 3)

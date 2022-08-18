@@ -8,8 +8,6 @@
 #' @param nstep An integer value defining the time step of the output file.
 #' Valid values are 1 (yearly), 12 (monthly), 365 (daily).
 #' @param years An integer vector of (sequential or non-sequential) years.
-#' @examples
-#' @details
 #' @seealso strptime, as.Date, format
 #' @export
 

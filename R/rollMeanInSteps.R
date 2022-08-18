@@ -1,3 +1,5 @@
+#' @title Step-wise rolling mean
+#'
 #' @description Apply step-wise rolling mean on vec.date, within windows
 #' defined by vec.class.
 #' Remove fluctuations around December and January.

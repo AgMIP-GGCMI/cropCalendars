@@ -7,5 +7,17 @@
 calcHarvestRule(croppar, monthly_temp, monthly_ppet, seasonality)
 }
 \description{
-Calculate harvest rule (Minoli et al., 2019)
+This function performs an agro-climatic classification of
+climate, based on monthly temperature and precipitation profiles.
+The classification is derived by intersecting the seasonality classes (see
+calcSeasonality) with the temperature of the warmest month, compared to
+crop-specific thresholds (base and optimal temperatures for reproductive
+growth):
+t-low, temperatures always lower than the base temperature;
+t-mid, temperatures exceed the base temperature, but are always lower than
+the optimum temperature;
+t-high, temperatures exceed the optimum temperature.
+}
+\seealso{
+calcSeasonality
 }
