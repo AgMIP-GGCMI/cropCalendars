@@ -8,11 +8,27 @@ calcCropCalendars(
   lon = NULL,
   lat = NULL,
   mclimate = NULL,
-  croppar_file = NULL,
-  crop = NULL
+  crop = NULL,
+  croppar_file = NULL
 )
 }
+\arguments{
+\item{lon}{Longitude (decimal degrees)}
+
+\item{lat}{Latitude (decimal degrees)}
+
+\item{mclimate}{Monthly climate. A list returned by the calcMonthlyClimate()
+function.}
+
+\item{crop}{A crop name (chr), among those specified in the croppar_file}
+
+\item{croppar_file}{Crop parameter file. If not specified, the default one is
+used.}
+}
 \description{
-Wrapper function calling all sub-functions necessary to
+Wrapper function calling sub-functions to
 calculate sowing and harvest dates.
+}
+\seealso{
+calcMonthlyClimate
 }

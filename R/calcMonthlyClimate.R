@@ -1,7 +1,17 @@
 #' @title Calculate monthly climate
 #'
 #' @description Calculate monthly climate variables needed for the computation
-#' of the rule-based crop calendars (Waha et al., 2012; Minoli et al., 2019)
+#' of the rule-based crop calendars (Waha et al., 2012; Minoli et al., 2019):
+#' average monthly mean temperature (mtemp);
+#' average monthly cumulative precipitation (mprec);
+#' average monthy cumulative potential evapotranspiration (mpet);
+#' dryness index 1, mprec-to-mpet ratio (mppet);
+#' dryness index 2, difference of mppet of two consecutive months (mppet_diff).
+#' P-to-PET (mppet) ratio indicates the water surplus or deficit with respect to
+#' the plant water demand; P-to-PET ratio difference (ppet_diff) indicates the
+#' monthly trend in moisture conditions, if mppet_diff[m] > 0,
+#' the trend is declining, indicating that the following month (m + 1) is
+#' dryer than month m.
 #'
 #' @param lat latitude (decimal value)
 #' @param temp daily temperature (degree Celsius) for a number of years
@@ -11,6 +21,10 @@
 #' @param syear start year in the climate time series.
 #' @param eyear end year in the climate time series.
 #' @param incl_feb29 Does the time series include February 29th in leap years?
+#'
+#' @return list of five vectors of length 12:
+#' mtemp, mprec, mpet, mppet, mppet_diff.
+#'
 #' @examples
 #' d_temp <- matrix(rnorm(365*3, 15), nrow = 3)
 #' d_prec <- matrix(rnorm(365*3, 3, 50), nrow = 3)

@@ -2,6 +2,10 @@
 #'
 #' @description Calculate days where thresholds are crossed from monthly values
 #'
+#' @param monthly_value numeric vector of length 12 representing monthly value
+#' of a variable.
+#' @param threshold numeric value representing a threshold.
+#'
 #' @export
 calcDoyCrossThreshold <- function(monthly_value,
                                   threshold

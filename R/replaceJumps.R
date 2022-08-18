@@ -1,4 +1,4 @@
-#' @title
+#' @title Replace jumps in a time series
 #'
 #' @description Function to find jumps in seasonality/harv.rule and remove them
 #' from time series of sowing or harvest dates.

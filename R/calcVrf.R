@@ -4,7 +4,7 @@
 #' @param hdate maturity date (DOY)
 #' @param mdt maturity date (DOY)
 #' @param vd vern requirement (days) from calc.vreq()
-#' @param vd_b vern ineffective until 20% vd is met
+#' @param vd_b vern ineffective until 20 \% of vd is met
 #' @param max.vern.days maximum vernalization requirements (days)
 #' @param max.vern.months maximum vernalization
 #' @param tv1 vern.temp.min

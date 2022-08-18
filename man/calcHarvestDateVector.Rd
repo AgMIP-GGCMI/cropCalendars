@@ -13,6 +13,33 @@ calcHarvestDateVector(
   monthly_ppet_diff
 )
 }
+\arguments{
+\item{croppar}{data.frame with crop parematers as returned by getCropParam}
+
+\item{sowing_date}{numeric value as day of the year (DOY). This can be either
+caculated with calcSowingDate or prescribed.}
+
+\item{sowing_season}{character value. Can be either "winter" or "spring". See
+calcSowingDate.}
+
+\item{monthly_temp}{numeric vector of length 12. Mean monthly air temperature
+(degree Celsius).}
+
+\item{monthly_ppet}{numeric vestor of length 12. Mean Potential Evapotranspiration (mm). See caclMonthlyClimate.}
+
+\item{monthly_ppet_diff}{numeric vestor of length 12. Mean difference of
+Potential Evapotranspiration (mm). See caclMonthlyClimate.}
+}
 \description{
-Calculate vector of possible harvest dates (Minoli et al., 2019)
+Harvest reasons are the events that can trigger the harvest
+of a crop within an agro-climatic zone:
+Earliest-maturing cultivar (GPmin);
+Cultivar with longest grain filling (GPmaxrp);
+Latest-maturing cultivar (GPmax);
+Escape terminal water stress (w. lim);
+Grain filling in warmest period (mid. t.);
+Escape high temperature (high t.).
+}
+\seealso{
+getCropParam, calcMonthlyClimate, calcSowingDate, calcCropCalendars
 }

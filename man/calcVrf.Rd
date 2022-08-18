@@ -27,7 +27,7 @@ calcVrf(
 
 \item{vd}{vern requirement (days) from calc.vreq()}
 
-\item{vd_b}{vern ineffective until 20% vd is met}
+\item{vd_b}{vern ineffective until 20 \% of vd is met}
 
 \item{max.vern.days}{maximum vernalization requirements (days)}
 

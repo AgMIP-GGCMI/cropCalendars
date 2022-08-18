@@ -1,3 +1,13 @@
+#' @title Plot maps of calcCropCalendar outputs
+#'
+#' @description This function generates a pdf file with all the relevant maps
+#' to visually check the results of calculated crop calendars.
+#'
+#' @param fnDT file name of the output data.table
+#' @param fnPDF file name of the PDF file
+#'
+#' @export
+
 plotMapCropCalendars <- function(fnDT  = NULL,
                                  fnPDF = NULL
 ) {

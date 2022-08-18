@@ -1,5 +1,26 @@
 #' @title Calculate vector of possible harvest dates (Minoli et al., 2019)
 #'
+#' @description Harvest reasons are the events that can trigger the harvest
+#' of a crop within an agro-climatic zone:
+#' Earliest-maturing cultivar (GPmin);
+#' Cultivar with longest grain filling (GPmaxrp);
+#' Latest-maturing cultivar (GPmax);
+#' Escape terminal water stress (w. lim);
+#' Grain filling in warmest period (mid. t.);
+#' Escape high temperature (high t.).
+#'
+#' @param croppar data.frame with crop parematers as returned by getCropParam
+#' @param sowing_date numeric value as day of the year (DOY). This can be either
+#' caculated with calcSowingDate or prescribed.
+#' @param sowing_season character value. Can be either "winter" or "spring". See
+#' calcSowingDate.
+#' @param monthly_temp numeric vector of length 12. Mean monthly air temperature
+#' (degree Celsius).
+#' @param monthly_ppet numeric vestor of length 12. Mean Potential Evapotranspiration (mm). See caclMonthlyClimate.
+#' @param monthly_ppet_diff numeric vestor of length 12. Mean difference of
+#' Potential Evapotranspiration (mm). See caclMonthlyClimate.
+#'
+#' @seealso getCropParam, calcMonthlyClimate, calcSowingDate, calcCropCalendars
 #' @export
 calcHarvestDateVector <- function(croppar,
                                   sowing_date,

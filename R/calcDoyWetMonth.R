@@ -4,6 +4,10 @@
 #' 120-days cumulative sum of the precipitation to potential evapotranspiration
 #' (P/PET) ratio.
 #'
+#' @param monthly_value numeric vector of length 12 representing monthly
+#' value of mppet as calculated by calcMonthlyClimate.
+#' @export
+
 calcDoyWetMonth <- function(monthly_value
                             ) {
 

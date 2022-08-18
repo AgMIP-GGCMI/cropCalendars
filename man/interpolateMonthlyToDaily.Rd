@@ -7,9 +7,16 @@
 interpolateMonthlyToDaily(monthly_value)
 }
 \arguments{
-\item{monthly_value}{Monthly values of a variable, typically a climate
-variable (e.g. temperature).}
+\item{monthly_value}{Numeric vector of monthly values of a variable,
+typically a climate variable (e.g. temperature).}
+}
+\value{
+list of two vectors (x and y) each of length 722. x indicates the
+day of the year, y indicates the interpolated daily value.
 }
 \description{
-Interpolate monthly values to daily values
+Daily values are obtained by linear interpolation of monthly
+values. Monthly values are assumed to refer to the mid-day of each month.
+In order to allow interpolation also between December and January, monthly
+values are repeated twice.
 }
