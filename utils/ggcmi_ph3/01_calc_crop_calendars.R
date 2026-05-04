@@ -8,15 +8,29 @@
 
 rm(list = ls(all = TRUE))
 
+num_cores <- as.integer(Sys.getenv("SLURM_CPUS_PER_TASK", unset = parallel::detectCores()))
+cat("\nNumber of cores: ", num_cores, "\n")
+
+log_status <- function(stage) {
+  cat("==== ", stage, " ====\n")
+  conns <- showConnections(all = TRUE)
+  cat("Number of open connections: ", if (is.null(conns)) 0 else nrow(conns), "\n")
+}
+
+log_status("Start of script")
+
+
 starttime <- Sys.time() # Track run-time
 print(starttime)
 
 # ------------------------------------ #
 # General settings
 work_dir <- setwd(paste(
-  "/home/minoli/crop_calendars_gitlab/r_package/cropCalendars/utils/ggcmi_ph3/"
+  "/p/projects/macmit/users/cmueller/repos/cropCalendars/utils/ggcmi_ph3/"
 ))
 source(paste0(work_dir, "/00_config.R"))
+
+log_status("read config")
 
 
 # ------------------------------------ #
@@ -26,9 +40,11 @@ if (cluster_job == TRUE) {
   options(echo = FALSE) # if you want see commands in output file
   args <- commandArgs(trailingOnly = TRUE)
 } else {
-  args <- c('GFDL-ESM4', 'historical', 'Maize', '2011')
+  args <- c('GFDL-ESM4', 'historical', 'Millet', '2071')
 }
 print(args)
+
+log_status("read args")
 
 # ------------------------------------ #
 # Select variable, crop, model, year
@@ -39,9 +55,13 @@ year   <- as.numeric(args[4])
 nnodes <- as.numeric(args[5])
 ntasks <- as.numeric(args[6])
 
+cat("\n", gcm, scen, cro, year, nnodes, ntasks, "\n")
+showConnections(all = TRUE)
+
 ncpus        <- ntasks * nnodes
-n_lon_chunks <- 45
+n_lon_chunks <- 120
 # --nodes=1 --ntasks-per-node=16 --exclusive
+log_status("computed ncups")
 
 # Output directory
 dfout_dir <- paste0(output_dir, "/crop_calendars/DT/", scen, "/", gcm, "/")
@@ -58,7 +78,7 @@ if(parallel == TRUE) {
   # by SLURM.
   # By default, R can see all CPUs, including those not allocated to us.
   #ncpus <- as.integer(Sys.getenv("SLURM_JOB_CPUS_PER_NODE"))
-  if (!exists("ncpus")) ncpus <- 16
+  if (!exists("ncpus")) ncpus <- 120
   cl <- makeCluster(ncpus)
   registerDoParallel(cl)
   getDoParName()
@@ -79,7 +99,7 @@ for (vv in seq(length(vars))) {
         # If SSP, concatenate also the last two files from historical scenario
         fnames1 <- paste_ggcmi3_clm_fname(
           path1         = climate_dir,
-          path2         = "climate3b/",
+          path2         = "",
           clm_scenario  = "historical",
           clm_forcing   = gcms[gg],
           ens_member    = enms[gcms[gg]],
@@ -97,7 +117,7 @@ for (vv in seq(length(vars))) {
 
       fnames2 <- paste_ggcmi3_clm_fname(
         path1         = climate_dir,
-        path2         = "climate3b/",
+        path2         = "",
         clm_scenario  = scens[sc],
         clm_forcing   = gcms[gg],
         ens_member    = enms[gcms[gg]],
@@ -187,17 +207,19 @@ output_df <- foreach(lo        = seq_len(ncol(lon_matrix)),
 
   for (i in idx_first_file:idx_last_file) {
     # Track memory used
-    print(pryr::mem_used())
+    #print(pryr::mem_used())
 
     # Read climate data
     tas <- cropCalendars::readNcdf(
       file_name = fnames_tas[i],
       dim_subset = list(lon = lon_matrix[, lo])
       )
+  #    str(tas)
     pr  <- cropCalendars::readNcdf(
       file_name = fnames_pr[i],
       dim_subset = list(lon = lon_matrix[, lo])
       )
+ #     str(pr)
 
     # Convert units
     tas <- k2deg(tas)
@@ -206,23 +228,34 @@ output_df <- foreach(lo        = seq_len(ncol(lon_matrix)),
     # Bind array along time dimension
     tas_array <- abind(tas_array, tas, use.dnns = TRUE)
     pr_array  <- abind(pr_array, pr, use.dnns = TRUE)
-
-    print(gc(verbose = TRUE))
+#str(tas_array)
+#str(pr_array)
+#length(tas_array)
+#length(pr_array)
+#length(tas_array[is.finite(tas_array)])
+#length(pr_array[is.finite(pr_array)])
+    #print(gc(verbose = TRUE))
 
     rm(tas, pr)
   } # i
 
   # Track memory used
-  print(pryr::mem_used())
+ # print(pryr::mem_used())
 
   # Loop through pixels to extract temperature and precipitation
   ccal_df <- NULL
   for (j in seq_len(nrow(grid_sub))) {
     lon_pix <- grid_sub$lon[j]
+  #  cat("\n", lon_pix, "\t")
     lat_pix <- grid_sub$lat[j]
+  #  cat(lat_pix, "\t")
 
     tas_pix <- tas_array[as.character(lon_pix), as.character(lat_pix), ]
+ #   cat("\n", length(tas_pix), "\t")
+  #  cat(any(is.na(tas_pix)), "\t")
     pr_pix  <- pr_array[as.character(lon_pix), as.character(lat_pix), ]
+ #   cat("\n", length(pr_pix), "\t")
+  #  cat(any(is.na(pr_pix)), "\t") 
     if (any(is.na(tas_pix)) | any(is.na(pr_pix))) {
       cat("\nMissing values, skipping ", lon_pix, lat_pix)
       next
@@ -234,6 +267,7 @@ output_df <- foreach(lo        = seq_len(ncol(lon_matrix)),
       end_date   = paste0(eyear, "-12-31"),
       step = "day"
     )
+#    cat(dates[1], "\t", dates[length(dates)], "\t")
     names(tas_pix) <- names(pr_pix) <- dates
 
     # Calculate monthly climate
@@ -245,7 +279,7 @@ output_df <- foreach(lo        = seq_len(ncol(lon_matrix)),
       eyear      = eyear,
       incl_feb29 = TRUE
       )
-
+#cat("\n", str(mclm), "\t")  
     # Calculate crop calendar
     ccal <- calcCropCalendars(
       lon             = lon_pix,
@@ -253,8 +287,9 @@ output_df <- foreach(lo        = seq_len(ncol(lon_matrix)),
       mclimate        = mclm,
       crop            = cro
       )
+#cat("\n", str(ccal), "\t")
     ccal_df <- rbind(ccal_df, ccal)
-
+#cat("\n", str(ccal_df), "\t")
     print(paste(j, "of", nrow(grid_sub)))
 
   } # j

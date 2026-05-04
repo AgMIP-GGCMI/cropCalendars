@@ -1,7 +1,7 @@
 Package: cropCalendars
 Type: Package
 Title: Compute rule-base crop sowing and harvest dates.
-Version: 0.1.0
+Version: 0.1.2
 Author: Sara Minoli <minoli@pik-potsdam.de>
 Maintainer:
     Sara Minoli <minoli@pik-potsdam.de>

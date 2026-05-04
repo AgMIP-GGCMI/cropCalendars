@@ -2,7 +2,7 @@
 
 # Run time per job about 30 min
 
-wd=/home/minoli/crop_calendars_gitlab/r_package/cropCalendars/utils/ggcmi_ph3
+wd=/p/projects/macmit/users/cmueller/repos/cropCalendars/utils/ggcmi_ph3
 
 gcms=('GFDL-ESM4' 'IPSL-CM6A-LR' 'MPI-ESM1-2-HR' 'MRI-ESM2-0' 'UKESM1-0-LL')
 scens=('historical' 'ssp585' 'ssp370' 'ssp126' '2015gs')
@@ -10,10 +10,10 @@ crops=('wwh' 'swh' 'mai' 'ri1' 'ri2' 'soy' 'mil' 'sor' 'pea' 'sgb' 'cas' 'rap' '
 irrigs=('rf' 'ir')
 
 
-gcms=('GFDL-ESM4')
-scens=('ssp585')
-crops=('mai')
-irrigs=('rf')
+#gcms=('GFDL-ESM4')
+#scens=('ssp585')
+#crops=('mai')
+#irrigs=('rf')
 
 for gc in "${!gcms[@]}";do
   for sc in "${!scens[@]}";do
@@ -25,7 +25,7 @@ for gc in "${!gcms[@]}";do
 
 sbatch --qos=standby --ntasks=1 --cpus-per-task=4 \
 -J nc_${gcms[gc]}_${scens[sc]}_${crops[cr]}_${irrigs[ir]} \
--A macmit -t 01:00:00 --workdir=${wd} \
+-A macmit -t 01:00:00 --chdir=${wd}  \
 R -f 03_calc_phu_for_lpjml.R \
 --args "${gcms[gc]}" "${scens[sc]}" "${crops[cr]}" "${irrigs[ir]}"
 

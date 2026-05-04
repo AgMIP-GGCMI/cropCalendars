@@ -6,7 +6,7 @@
 # Email:   sara.minoli@pik-potsdam.de
 # ---------------------------------------------------------------------------- #
 
-rm(list = ls(all = TRUE))
+rm(list = ls(all.names = TRUE))
 
 starttime <- Sys.time() # Track run-time
 print(starttime)
@@ -14,7 +14,7 @@ print(starttime)
 # ------------------------------------ #
 # General settings
 work_dir <- setwd(paste(
-  "/home/minoli/crop_calendars_gitlab/r_package/cropCalendars/utils/ggcmi_ph3/"
+  "/p/projects/macmit/users/cmueller/repos/cropCalendars/utils/ggcmi_ph3/"
 ))
 source(paste0(work_dir, "/00_config.R"))
 
@@ -57,15 +57,15 @@ if (scen == "2015gs") {
 } else if (scen == "historical") {
 
   # first and last year of ncdf files
-  FYnc <- 1991
+  FYnc <- 1881
   LYnc <- 2014
 
   # Sowing and cultivar to change every 10 years
-  SYs <-   seq(1991, 2011, by = 10) # Start of the period
-  EYs <- c(seq(2000, 2014, by = 10), 2014) # End of the period
+  SYs <-   seq(1881, 2011, by = 10) # Start of the period
+  EYs <- c(seq(1890, 2014, by = 10), 2014) # End of the period
   # Computing sowing and harvest dates based on preceding 30-years climate
-  FYs <-   seq(1961, 1981, by = 10) # First year DT file (output of main.R)
-  LYs <-   seq(1990, 2010, by = 10) # Last  year DT file (output of main.R)
+  FYs <-   seq(1851, 1981, by = 10) # First year DT file (output of main.R)
+  LYs <-   seq(1880, 2010, by = 10) # Last  year DT file (output of main.R)
 
   HYs <- rep(scen, length(SYs))
 

@@ -6,7 +6,7 @@
 # Email:   sara.minoli@pik-potsdam.de
 # ---------------------------------------------------------------------------- #
 
-rm(list = ls(all = TRUE))
+rm(list = ls(all.names = TRUE))
 
 stime <- Sys.time() # Track run-time
 print(stime)
@@ -14,7 +14,7 @@ print(stime)
 # ------------------------------------ #
 # General settings
 work_dir <- paste(
-  "/home/minoli/crop_calendars_gitlab/r_package/cropCalendars/utils/ggcmi_ph3/"
+  "/p/projects/macmit/users/cmueller/repos/cropCalendars/utils/ggcmi_ph3/"
 )
 setwd(work_dir)
 source("./00_config.R")
@@ -29,7 +29,7 @@ if (cluster_job == TRUE) {
   options(echo = FALSE) # if you want see commands in output file
   args <- commandArgs(trailingOnly = TRUE)
 } else {
-  args <- c("GFDL-ESM4", "ssp585", "mai", "rf")
+  args <- c("GFDL-ESM4", "ssp126", "swh", "ir")
 }
 print(args)
 
@@ -58,15 +58,15 @@ if (scen == "2015gs") {
 } else if (scen == "historical") {
 
   # first and last year of ncdf files
-  FYnc <- 1991
+  FYnc <- 1881
   LYnc <- 2014
 
   # Sowing and cultivar to change every 10 years
-  SYs <- seq(1991, 2091, by = 10) # Start of the period
-  EYs <- seq(2000, 2100, by = 10) # End of the period
+  SYs <- seq(1881, 2091, by = 10) # Start of the period
+  EYs <- seq(1890, 2100, by = 10) # End of the period
   # Computing sowing and harvest dates based on preceding 30-years climate
-  FYs <- seq(1961, 2061, by = 10) # First year DT file (output of main.R)
-  LYs <- seq(1990, 2090, by = 10) # Last  year DT file (output of main.R)
+  FYs <- seq(1851, 2061, by = 10) # First year DT file (output of main.R)
+  LYs <- seq(1880, 2090, by = 10) # Last  year DT file (output of main.R)
 
   nhist <- length(LYs[LYs < 2015]) # number of historical time slices
   HYs <- c(rep("historical", nhist), rep("ssp126", length(SYs) - nhist))

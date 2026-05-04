@@ -19,8 +19,7 @@ library(zoo)           # for rolling mean
 # General Settings
 
 # Output directory: where output data are going to be saved
-output_dir <- paste0("/p/projects/macmit/users/minoli/PROJECTS/",
-                   "GGCMI_ph3_adaptation_test_220811/ISIMIP3b/")
+output_dir <- paste0("/p/projects/macmit/data/GGCMI/phase3/GGCMI_ph3_adaptation_cropping_calendars/")
 
 parallel     <- TRUE
 cluster_job  <- TRUE
@@ -31,9 +30,8 @@ ccal_years    <- seq(1601, 2091, by = 10)
 # Number of years for average climate
 clm_avg_years <- 30
 
-climate_dir <- paste0("/p/projects/macmit/data/GGCMI/AgMIP.input/",
-                      "phase3/climate_land_only/")
-isimip3b.path <- "/p/projects/lpjml/input/scenarios/ISIMIP3b/" # .clm climate
+climate_dir <- paste0("/p/projects/macmit/data/GGCMI/phase3/input_land_only_v2/")
+isimip3b.path <- "/p/projects/lpjml/input/scenarios/ISIMIP3bv2/" # .clm climate
 
 # Climate input files
 gcms <- c(
@@ -115,7 +113,7 @@ crop_ls <- list(all_low = c("winter_wheat", "spring_wheat", "maize", "rice1", "r
                             "soybean", "millet", "sorghum","peas","sugar_beat",
                             "cassava","rape_seed","sunflower","nuts","sugarcane"),
                 rb_cal  = c("Winter_Wheat", "Spring_Wheat", "Maize", "Rice", NA,
-                            "Soybean", NA, "Sorghum", NA, NA,
+                            "Soybean", "Millet", "Sorghum", NA, NA,
                             NA, NA, NA, NA, NA),
                 ggcmi   = c("wwh","swh","mai","ri1","ri2",
                             "soy","mil","sor","pea","sgb",
