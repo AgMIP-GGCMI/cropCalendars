@@ -1,0 +1,61 @@
+#!/bin/bash
+
+#module purge
+#module load nco cdo/1.9.5-gcc64 netcdf_c/4.3.2-gcc48
+#module load nco/5.1.0 cdo/1.9.10/gnu netcdf-c/4.9.0/gnu/10.2
+source rhel8_stack
+module load nco/5.1.9-spack
+module load cdo/2.4.0-spack
+
+
+#BASE_DIR_ROOT=/p/projects/macmit/users/minoli/PROJECTS/GGCMI_ph3_adaptation/ISIMIP3bv2/crop_calendars/ncdf
+BASE_DIR_ROOT=/p/projects/macmit/data/GGCMI/phase3/GGCMI_ph3_adaptation_cropping_calendars/ISIMIP3b/InputData/socioeconomic/crop_calendar  #/home/delvalle/data/ISIMIP3a/InputData/socioeconomic/crop_calendar
+
+# --fix_rec_dmn $VAR $FILE $FILE.tmp
+GCMS="GFDL-ESM4 IPSL-CM6A-LR MPI-ESM1-2-HR MRI-ESM2-0 UKESM1-0-LL"
+SPECS="ssp585soc-adapt ssp370soc-adapt ssp126soc-adapt historical"
+
+REF_DATE="1601-01-01,00:00:00,1year"
+CALENDAR="standard"
+
+for GCM in $GCMS; do
+
+  GCM_LC=$(echo $GCM | tr '[:upper:]' '[:lower:]')
+  echo $GCM_LC
+
+for SPEC in $SPECS;do
+  
+  BASE_DIR=$BASE_DIR_ROOT/$GCM/$SPEC
+  echo $BASE_DIR
+
+for FILE in $(find $BASE_DIR -maxdepth 3 -type f | grep -v annual | grep .tmp | sort );do
+
+  echo "  "
+  echo $FILE
+    
+  FILENAME=$(basename $FILE)
+  EXTENSION=${FILENAME##*.}
+  BASENAME=$(basename $FILENAME .${EXTENSION})
+  echo $BASENAME
+
+  OUTDIR=$(dirname $FILE)
+  FILENEW=$OUTDIR/$(echo $BASENAME |sed -e 's/firr_/firr_annual_/')
+  echo $FILENEW
+
+#  continue
+
+  if [ ! -f ${FILENEW} ]; then
+
+    nccopy -k4 -c "time/1,lat/360,lon/720" $FILE $FILENEW
+    rm $FILE
+#    [ -f ${FILE}.tmp ] && ncatted -O -h -a missing_value,,o,f,1e+20 ${FILE}.tmp
+#    mv $FILE $FILENEW
+#        exit
+  fi
+done
+done
+done
+
+
+
+
