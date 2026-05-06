@@ -67,7 +67,7 @@ for SPEC in $SPECS_RAW; do
 #    echo $DATES
 
     #FILE_NEW=$OUT_DIR/ggcmi-crop-calendar_${GCM_LC}_${SPEC_NEW}_${VAR}-${IRR}_${DATES}.nc
-    FILE_NEW=$OUT_DIR/ggcmi-crop-calendar_${GCM_LC}_${SPEC_NEW}_${VAR}-${IRR}_${DATES}.nc
+    FILE_NEW=$OUT_DIR/ggcmi-crop-calendar_${GCM_LC}_${SPEC_NEW}_${VAR}-${IRR}_annual_${DATES}.nc
     echo $FILE_NEW
     
     # Correct file name
