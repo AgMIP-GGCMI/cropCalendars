@@ -28,7 +28,7 @@ for SPEC in $SPECS;do
   BASE_DIR=$BASE_DIR_ROOT/$GCM/$SPEC
   echo $BASE_DIR
 
-for FILE in $(find $BASE_DIR -maxdepth 3 -type f | grep -v .tmp | sort );do
+for FILE in $(find $BASE_DIR -maxdepth 3 -type f | sort );do
 
   echo "  "
   echo $FILE
@@ -36,7 +36,7 @@ for FILE in $(find $BASE_DIR -maxdepth 3 -type f | grep -v .tmp | sort );do
   if [ ! -f ${FILE}.tmp ]; then
 
     START_YEAR=""
-    START_YEAR=$(echo $FILE | awk -F"/" '{print $NF}' | awk -F"_" '{print $5}')
+    START_YEAR=$(echo $FILE | awk -F"/" '{print $NF}' | awk -F"_" '{print $6}')
     TIME=$(echo ${START_YEAR}-01-01,00:00:00,1year)
     echo $START_YEAR
 
@@ -44,11 +44,11 @@ for FILE in $(find $BASE_DIR -maxdepth 3 -type f | grep -v .tmp | sort );do
 
     cdo -s --history -setreftime,$REF_DATE -settaxis,$TIME -setcalendar,$CALENDAR $FILE $FILE.tmp
 #    [ -f ${FILE}.tmp ] && ncatted -O -h -a missing_value,,o,f,1e+20 ${FILE}.tmp
-    # invert latidues as per request by Matthias
-    cdo -f nc4c -z zip invertlat $FILE.tmp $FILE
-    find "$BASE_DIR" -type f -name '*.tmp' -delete
+    # invert latidues and correct fill value as per request by Matthias
+    cdo -f nc4c -z zip invertlat -setctomiss,NaNf $FILE.tmp $FILE
 #        exit
   fi
 done
+  find "$BASE_DIR" -type f -name '*.tmp' -delete
 done
 done

@@ -30,7 +30,7 @@ for SPEC in $SPECS;do
   BASE_DIR=${BASE_DIR_ROOT}/$GCM/$SPEC
   echo $BASE_DIR
 
-for FILE in $(find $BASE_DIR -maxdepth 3 -type f | grep annual | sort );do
+for FILE in $(find $BASE_DIR -maxdepth 3 -type f | sort );do
 
   echo "  "
   echo $FILE

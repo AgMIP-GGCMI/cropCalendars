@@ -28,7 +28,7 @@ for SPEC in $SPECS;do
   BASE_DIR=$BASE_DIR_ROOT/$GCM/$SPEC
   echo $BASE_DIR
 
-for FILE in $(find $BASE_DIR -maxdepth 3 -type f | grep -v annual | grep .tmp | sort );do
+for FILE in $(find $BASE_DIR -maxdepth 3 -type f -name '*.nc' | sort );do
 
   echo "  "
   echo $FILE
@@ -39,7 +39,7 @@ for FILE in $(find $BASE_DIR -maxdepth 3 -type f | grep -v annual | grep .tmp | 
   echo $BASENAME
 
   OUTDIR=$(dirname $FILE)
-  FILENEW=$OUTDIR/$(echo $BASENAME |sed -e 's/firr_/firr_annual_/')
+  FILENEW=$OUTDIR/$BASENAME.tmp
   echo $FILENEW
 
 #  continue
@@ -48,6 +48,7 @@ for FILE in $(find $BASE_DIR -maxdepth 3 -type f | grep -v annual | grep .tmp | 
 
     nccopy -k4 -c "time/1,lat/360,lon/720" $FILE $FILENEW
     rm $FILE
+    mv $FILENEW $FILE
 #    [ -f ${FILE}.tmp ] && ncatted -O -h -a missing_value,,o,f,1e+20 ${FILE}.tmp
 #    mv $FILE $FILENEW
 #        exit
