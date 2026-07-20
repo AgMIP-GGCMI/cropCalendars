@@ -30,3 +30,17 @@ thermal-vernal-photo = "tvp"}
 \description{
 Calculate PHU requirements
 }
+\details{
+Single-cell wrapper around the vectorised cores
+  \code{.calc_phu_thermal_vec} / \code{.calc_phu_vernal_vec} (the one source of truth, in
+  \code{generatePHUTserie_isimip3.R}): sum the daily effective thermal units
+  \code{max(mdt - basetemp, 0)} (scaled by \code{vern_factor} for the \code{"tv"} model)
+  over the growing window \code{[sdate, hdate)}, wrapping the year when \code{hdate <= sdate}.
+  The \code{"tv"} sum is returned negated (LPJmL reads a negative PHU as "needs
+  vernalization"). Returns 0 when \code{sdate}/\code{hdate} is \code{NA} or 0.
+
+  NOTE: this now matches the vectorised core used by the pipeline, which fixes two
+  edge bugs in the former scalar body — at \code{sdate == 1} the old code dropped day 1
+  from the growing period, and at \code{sdate == hdate} it dropped ~2 days; both are
+  handled correctly here. Identical to the old scalar for all other inputs.
+}

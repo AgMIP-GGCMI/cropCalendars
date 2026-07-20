@@ -4,7 +4,13 @@
 \alias{readNcdf}
 \title{Read ncdf file}
 \usage{
-readNcdf(file_name = NULL, dim_subset = NULL, var_name = NULL, verbose = FALSE)
+readNcdf(
+  file_name = NULL,
+  dim_subset = NULL,
+  var_name = NULL,
+  verbose = FALSE,
+  index_dims = character(0)
+)
 }
 \arguments{
 \item{file_name}{File name of ncdf file with path.}
@@ -20,6 +26,12 @@ contains more than one variable (e.g. temperature, precipitation).}
 
 \item{verbose}{(Optional) If TRUE, it prints some useful meta-data
 (e.g. dimension names).}
+
+\item{index_dims}{(Optional) Character vector of dimension names whose
+\code{dim_subset} entries are 1-based POSITIONS (indices) rather than coordinate
+values. Use for axes whose stored coordinates are not 0-based -- e.g. a time axis
+with a 0.5 mid-day offset or a fixed epoch -- where positional selection is what is
+meant. Default \code{character(0)} = all dims matched by coordinate value.}
 }
 \description{
 Read ncfd file with ncfd4 package.

@@ -10,7 +10,21 @@ calcHarvestDateVector(
   sowing_season,
   monthly_temp,
   monthly_ppet,
-  monthly_ppet_diff
+  monthly_ppet_diff,
+  daily_temp = NULL,
+  daily_prec = NULL,
+  daily_pet = NULL,
+  cross_min_duration = 1L,
+  cross_min_area = 0,
+  smooth_window = 31L,
+  prev_rw1 = NA_integer_,
+  harv_exist_eps = 0,
+  prev_wet_near = NA,
+  prev_wetend_found = NA,
+  temp_cross_min_area = 0,
+  prev_topt_found = NA,
+  wet_near_min_area = 0,
+  prev_floor_found = NA
 )
 }
 \arguments{
@@ -25,10 +39,96 @@ calcSowingDate.}
 \item{monthly_temp}{numeric vector of length 12. Mean monthly air temperature
 (degree Celsius).}
 
-\item{monthly_ppet}{numeric vestor of length 12. Mean Potential Evapotranspiration (mm). See caclMonthlyClimate.}
+\item{monthly_ppet}{numeric vestor of length 12. Mean Potential Evapotranspiration (mm). See calcClimatology.}
 
-\item{monthly_ppet_diff}{numeric vestor of length 12. Mean difference of
-Potential Evapotranspiration (mm). See caclMonthlyClimate.}
+\item{monthly_ppet_diff}{DEPRECATED and ignored. Was the monthly P/PET trend feeding the
+retired \code{doy_wet2} trend wet-end estimate (see NEWS). Kept in the signature so existing
+\code{calcCropCalendars} calls do not break.}
+
+\item{daily_temp}{numeric vector of length 365. Climatological daily mean
+temperature (deg C), one value per DOY (the \code{dtemp} element from
+\code{calcClimatology}). If \code{NULL}, it is interpolated from
+\code{monthly_temp}.}
+
+\item{daily_prec}{numeric vector of length 365. Climatological daily
+precipitation (mm) per DOY (the \code{dprec} element from
+\code{calcClimatology}). Used with \code{daily_pet} to form the spike-free
+daily P/PET (ratio of per-DOY means) for the wet-season-end crossing. If
+\code{NULL}, the daily P/PET is interpolated from \code{monthly_ppet} instead.}
+
+\item{daily_pet}{numeric vector of length 365. Climatological daily PET (mm)
+per DOY (the \code{dpet} element from \code{calcClimatology}).}
+
+\item{cross_min_duration}{integer minimum sustained-excursion length (days)
+forwarded to \code{calcDoyCrossThreshold} for the hot-day temperature crossings
+(default 1 = off). The wet-season-end LEVEL crossing (\code{doy_wet1})
+is guarded by \code{cross_min_area} alone (its \code{min_duration} is retired, since a
+deficit-days budget >= ~2 already implies multi-day persistence). See \code{?calcDoyCrossThreshold}.}
+
+\item{cross_min_area}{Integrated-excursion (deficit-days) budget for the wet-season-end LEVEL
+crossing (\code{doy_wet1}, \code{daily_ppet} vs \code{ppet_ratio}; also the tier-2 \code{ppet_min}
+floor crossing) -- magnitude-weights persistence so a grazing P/PET crossing must persist far
+longer to count. A length-2 \code{c(lo, hi)} HYSTERETIC (Schmitt) pair: a previously-FOUND wet-end
+(\code{prev_wetend_found}) uses the lenient \code{lo}, a previously-ABSENT one the strict \code{hi},
+so a dip whose area grazes the budget does not flip the wet-end's existence year to year. A scalar
+means \code{lo == hi} (no hysteresis); default 0 = off. See \code{?calcDoyCrossThreshold}.}
+
+\item{smooth_window}{Integer day-window for the daily-climatology smoothing -- the single
+global window applied to BOTH the crossing inputs (the hot-day \code{daily_temp} crossing,
+and \code{daily_prec} / \code{daily_pet} before the wet-season-end P/PET ratio) AND the
+reductions (\code{warmest_day}, driest-window P/PET).
+Default 31 (odd). See \code{calcCropCalendars}.}
+
+\item{prev_rw1}{Integer level wet-end EXISTENCE regime from last year (0 = absent-DRY,
+1 = found, 2 = absent-WET), or \code{NA}. Used only on the \code{cc_regime} path when
+\code{harv_exist_eps > 0}.}
+
+\item{harv_exist_eps}{Non-negative relative directional deadband (default 0 = off) on the
+wet-end EXISTENCE boundary (the \code{ppet_ratio} level crossing, \code{doy_wet1}). Leaving
+the absent-DRY regime needs the peak to clear \code{ppet_ratio * (1 + eps)}; leaving
+absent-WET needs the trough below \code{ppet_ratio * (1 - eps)}. Experimental, gated by
+\code{options(cc_regime = TRUE)}.}
+
+\item{prev_wet_near}{Logical hysteresis state from last year (or \code{NA}): was the cell wet
+near sowing? Drives the always-on WET-NEAR GATE -- the wet-season escape (and the no-wet-end
+\code{hd_last}/\code{hd_first} decision) is taken only when the cell is wet within a hysteretic
+window after the (temperature-set) sowing; otherwise it falls to the aridity-floor tier and, if
+that also fails, to \code{hd_first}. Previously-wet widens the window (\code{options(cc_wet_window_hi)},
+default 20), previously-dry narrows it (\code{cc_wet_window_lo}, default 10). The resolved value is
+carried forward packed into \code{attr(., "harv_hi")} (12x bit).}
+
+\item{prev_wetend_found}{Logical hysteresis state from last year (or \code{NA}): did a wet-end
+(\code{doy_wet1}) exist? Selects the Schmitt bound of \code{cross_min_area} (found -> lenient
+\code{lo}, absent -> strict \code{hi}). The resolved value is carried forward in the
+\code{attr(., "harv_hi")} 6x bit. \code{NA} on the first year uses the strict bound.}
+
+\item{temp_cross_min_area}{Integrated-excursion (degree-days) budget for the reproductive-phase
+hot-day temperature crossing (\code{hd_temp_opt}: \code{daily_temp} vs \code{temp_opt_rphase}) --
+the temperature analogue of \code{cross_min_area}, magnitude-weighting the crossing so a smoothed
+temperature that merely grazes \code{temp_opt_rphase} must persist far longer to register a hot
+season. Damps the \code{hd_temp_opt} EXISTENCE flicker in marginal cells whose warm plateau sits at
+the threshold (e.g. subtropical winter wheat). A length-2 \code{c(lo, hi)} HYSTERETIC pair like
+\code{cross_min_area}: a previously-FOUND crossing (\code{prev_topt_found}) uses the lenient
+\code{lo}, a previously-ABSENT one the strict \code{hi}. Scalar = no hysteresis; default 0 = off.}
+
+\item{prev_topt_found}{Logical hysteresis state from last year (or \code{NA}): did the reproductive
+hot-day crossing (\code{doy_opt_rp}) exist? Selects the Schmitt bound of \code{temp_cross_min_area}.
+Carried forward in the \code{attr(., "harv_hi")} 24x bit. \code{NA} on the first year = strict.}
+
+\item{wet_near_min_area}{Non-negative integrated-excursion budget (default 0 = off) for the wet-near
+gate: instead of \code{any(daily_ppet[window] >= threshold)} (a brittle single-day MAX that flips on
+the P/PET peak grazing the threshold), require \code{sum(daily_ppet[window] - threshold)} over the
+above-threshold days to reach the budget -- so a thin touch (area ~0) reads as NOT wet. A length-2
+\code{c(lo, hi)} HYSTERETIC pair like \code{cross_min_area}: a previously-wet cell stays wet at the
+lenient \code{lo}, a previously-dry one needs the strict \code{hi}. Reuses \code{prev_wet_near} (no
+extra state). Chiefly affects Rice (\code{ppet_ratio = 1.0}, sown on the descending limb of a
+winter-wet climate so the window straddles the 1.0 crossing).}
+
+\item{prev_floor_found}{Logical hysteresis state from last year (or \code{NA}): did the TIER-2
+\code{ppet_min} floor dry-down (\code{floor_end}) exist? Selects the Schmitt bound of
+\code{cross_min_area} for the floor crossing (the full parallel of \code{prev_wetend_found} for the
+\code{ppet_ratio} crossing). Carried forward in the \code{attr(., "harv_hi")} 48x bit. Only the floor
+tier (Rice, \code{ppet_min < ppet_ratio}) exercises it. \code{NA} on the first year = strict.}
 }
 \description{
 Harvest reasons are the events that can trigger the harvest
@@ -39,7 +139,14 @@ Latest-maturing cultivar (GPmax);
 Escape terminal water stress (w. lim);
 Grain filling in warmest period (mid. t.);
 Escape high temperature (high t.).
+
+The temperature- and water-driven harvest dates (\code{hd_wetseas},
+\code{hd_temp_base}, \code{hd_temp_opt}) are evaluated on the \emph{daily}
+climatology, consistent with \code{calcSowingDate}. Evaluating them on the
+12 monthly values instead quantises these dates to whole months, which makes
+the resulting harvest dates flip by ~30 days between climate windows (e.g.
+when the warmest month alternates between July and August).
 }
 \seealso{
-getCropParam, calcMonthlyClimate, calcSowingDate, calcCropCalendars
+getCropParam, calcClimatology, calcSowingDate, calcCropCalendars
 }

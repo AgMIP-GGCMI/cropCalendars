@@ -44,3 +44,15 @@ calcVrf(
 \description{
 Calculate Vernalization Reduction Factor
 }
+\details{
+Single-cell wrapper around the vectorised core \code{.build_vrf_mat} (the one
+  source of truth, in \code{generatePHUTserie_isimip3.R}). Daily vernalization
+  effectiveness is a trapezoid in temperature (0 below \code{tv1}, ramp to 1 across
+  \code{[tv1,tv2]}, plateau on \code{[tv2,tv3]}, ramp back to 0 across \code{[tv3,tv4]});
+  accumulating it from \code{sdate}, the reduction factor stays 0 until \code{vd_b} (20\%)
+  of the requirement \code{vd} is banked, then ramps linearly to 1 at full \code{vd}.
+  \code{vd <= 0} returns all-ones (no requirement). \code{max.vern.days}/
+  \code{max.vern.months} are vestigial (unused by the body, as in the original).
+  Equivalent to the old scalar to ~1e-14 (the cumsum core reorders the summation), and
+  returns a plain numeric vector (the old 1-D-\code{array} dim attribute is dropped).
+}

@@ -26,3 +26,9 @@ calcVd(
 \description{
 Calculate Required Vernalization Days
 }
+\details{
+Single-cell wrapper around the vectorised core \code{.calc_vd_vec} (the one
+  source of truth, in \code{generatePHUTserie_isimip3.R}): rank the months coldest-first,
+  keep the \code{max.vern.months} coldest, credit each a piecewise vernalization-day
+  amount (full below \code{tv2}, zero above \code{tv3}, linear ramp between), sum and round.
+}

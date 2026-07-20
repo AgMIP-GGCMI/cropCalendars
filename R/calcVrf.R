@@ -11,7 +11,17 @@
 #' @param tv2 vern.temp.opt.min
 #' @param tv3 vern.temp.opt.max
 #' @param tv4 vern.temp.max
-
+#'
+#' @details Single-cell wrapper around the vectorised core \code{.build_vrf_mat} (the one
+#'   source of truth, in \code{generatePHUTserie_isimip3.R}). Daily vernalization
+#'   effectiveness is a trapezoid in temperature (0 below \code{tv1}, ramp to 1 across
+#'   \code{[tv1,tv2]}, plateau on \code{[tv2,tv3]}, ramp back to 0 across \code{[tv3,tv4]});
+#'   accumulating it from \code{sdate}, the reduction factor stays 0 until \code{vd_b} (20\%)
+#'   of the requirement \code{vd} is banked, then ramps linearly to 1 at full \code{vd}.
+#'   \code{vd <= 0} returns all-ones (no requirement). \code{max.vern.days}/
+#'   \code{max.vern.months} are vestigial (unused by the body, as in the original).
+#'   Equivalent to the old scalar to ~1e-14 (the cumsum core reorders the summation), and
+#'   returns a plain numeric vector (the old 1-D-\code{array} dim attribute is dropped).
 calcVrf <- function(sdate           = NA,
                     hdate           = NA,
                     mdt             = rep(NA, 365),
@@ -25,80 +35,6 @@ calcVrf <- function(sdate           = NA,
                     tv4             = 17
                     ) {
 
-  # Initialize Vernalization Components
-  veff        <- array(0, 365)   # Vernalization Effectiveness
-  endday.vern <- 0               # Day of end of vernalization period
-  vrf <- array(1.0, 365) # Vernalization Reduction Factor
-
-  # ------------------------------------------------------#
-
-  # Calculate Vernalization Effectiveness for each day of the year
-  # veff == 1 means full vernalization day
-
-  for (k in 1:365) {
-
-    if      (mdt[k] >= tv1 && mdt[k] <  tv2) veff[k] <- (mdt[k]-tv1)/(tv2-tv1)
-    else if (mdt[k] >= tv2 && mdt[k] <= tv3) veff[k] <- 1
-    else if (mdt[k] >  tv3 && mdt[k] <  tv4) veff[k] <- (tv4-mdt[k])/(tv4-tv3)
-    else if (mdt[k] >= tv4)                  veff[k] <- 0
-    else if (mdt[k] <  tv1)                  veff[k] <- 0
-    else {
-      print(paste("Stop! no veff associated on day:", k))
-      break
-    }
-  }
-  veff[veff>1] <- 1 # cannot be larger 1
-  veff[veff<0] <- 0 # cannot be smaller 0
-
-  veff <- c(veff, veff) # Repeat twice
-
-  # ------------------------------------------------------#
-
-  # Calculate Day when Vernalization Requirements (vd) are met,
-  #  starting from sdate
-  vdsum <- 0
-  k     <- sdate
-  hd    <- ifelse(sdate < hdate, hdate, hdate+365)
-  while (vdsum < vd && k < hd) {
-    vdsum <- vdsum + veff[k]
-    if (vdsum < vd) k <- k + 1
-  }
-
-  if (vdsum >= vd) {
-    endday.vern <- k
-  } else {
-    endday.vern <- Inf
-  }
-
-  # ------------------------------------------------------#
-
-  # Calculate Vernalization Reduction Factor (vf) for each day between
-  #  sdate and day when Vreq are met
-
-  vdsum <- 0
-
-  for (k in sdate:min(endday.vern, hd)) {
-
-    vdsum <- vdsum + veff[k]
-
-    # vrf = 0 until 20% vernalization requirements reached
-    # if VDD < 20% Vreq (Vb)
-    if (vdsum<(vd*vd_b)) {
-      vrf[ifelse(k>365,k-365,k)] <- 0.0
-    } else {
-      vrf.tmp <- max(0, min(1, (vdsum-(vd*vd_b))/(vd-(vd*vd_b)) )  )
-      vrf[ifelse(k>365,k-365,k)] <- vrf.tmp
-    }
-  } # k
-
-
-  # in cases of no vernalization requirements
-  #  (winter crop in warm regions or spring crop)
-  if (vd == 0) {
-    vrf <- 1
-    endday.vern <- sdate
-  }
-
-  return(vrf)
-
+  as.vector(.build_vrf_mat(sdate, hdate, matrix(mdt, nrow = 1L), vd,
+                           vd_b = vd_b, tv1 = tv1, tv2 = tv2, tv3 = tv3, tv4 = tv4))
 }

@@ -9,7 +9,26 @@ calcCropCalendars(
   lat = NULL,
   mclimate = NULL,
   crop = NULL,
-  croppar_file = NULL
+  croppar_file = NULL,
+  crop_parameters = NULL,
+  prev_wet_doy = NA_integer_,
+  wet_window_eps = 0,
+  wet_window_decay = 0.3,
+  cross_min_duration = 1L,
+  cross_min_area = 0,
+  temp_cross_min_area = 0,
+  wet_near_min_area = 0,
+  smooth_window = 31L,
+  prev_seas = NA_character_,
+  seas_eps = 0,
+  seas_mtemp_margin = 1,
+  prev_harv = NA_integer_,
+  harv_tmax_margin = 0,
+  harv_ppet_eps = 0,
+  harv_exist_eps = 0,
+  prev_winter = NA_integer_,
+  winter_margin = 0,
+  winter_cold_margin = 0
 )
 }
 \arguments{
@@ -17,18 +36,115 @@ calcCropCalendars(
 
 \item{lat}{Latitude (decimal degrees)}
 
-\item{mclimate}{Monthly climate. A list returned by the calcMonthlyClimate()
+\item{mclimate}{Monthly climate. A list returned by the calcClimatology()
 function.}
 
 \item{crop}{A crop name (chr), among those specified in the croppar_file}
 
 \item{croppar_file}{Crop parameter file. If not specified, the default one is
 used.}
+
+\item{crop_parameters}{Optional pre-extracted crop-parameter row (one row
+\code{data.frame}, as returned by \code{getCropParam}). When supplied, the
+parameter file is not read — essential when calling this per cell in a loop
+(avoids re-reading the CSV on every call). \code{crop}/\code{croppar_file}
+are then ignored.}
+
+\item{prev_wet_doy}{Integer DOY of last year's wettest-window start (or
+\code{NA}), forwarded to \code{calcSowingDate}/\code{calcDoyWetMonth} for
+temporal hysteresis (sliding-window pipeline). Only used when
+\code{wet_window_eps > 0}. The wettest-window argmax is crop-independent, so
+this state is per-cell. The resolved DOY is also returned as
+\code{attr(., "wet_doy")} for the caller to carry forward.}
+
+\item{wet_window_eps}{Non-negative relative hysteresis band forwarded to
+\code{calcDoyWetMonth} (default 0 = off). See \code{?calcDoyWetMonth}.}
+
+\item{wet_window_decay}{Positive Gaussian decay scale forwarded to
+\code{calcDoyWetMonth} (default 0.3; smaller = stickier). See
+\code{?calcDoyWetMonth}.}
+
+\item{cross_min_duration}{Integer minimum sustained-excursion length (days)
+forwarded to \code{calcSowingDate}/\code{calcHarvestDateVector} ->
+\code{calcDoyCrossThreshold} (default 1 = off). See
+\code{?calcDoyCrossThreshold}.}
+
+\item{cross_min_area}{Non-negative integrated-excursion (deficit-days) budget forwarded to
+\code{calcHarvestDateVector} for the wet-season-end level crossing only -- magnitude-weights
+the persistence guard so a grazing P/PET crossing must persist far longer to count
+(default 0 = off). See \code{?calcDoyCrossThreshold} (\code{min_area}).}
+
+\item{temp_cross_min_area}{Non-negative integrated-excursion (degree-days) budget forwarded to
+\code{calcHarvestDateVector} for the reproductive hot-day crossing (\code{hd_temp_opt}) -- the
+temperature analogue of \code{cross_min_area}, damping the \code{hd_temp_opt} existence flicker in
+marginal cells whose warm plateau grazes \code{temp_opt_rphase} (subtropical winter wheat). A
+length-2 \code{c(lo, hi)} HYSTERETIC pair carried per cell AND per crop (the 24x bit of
+\code{prev_harv}); default 0 = off. See \code{?calcHarvestDateVector}.}
+
+\item{wet_near_min_area}{Non-negative integrated-excursion budget (default 0 = off) for the wet-near
+gate, forwarded to \code{calcHarvestDateVector}. Replaces the brittle single-day max test with an
+area-above-threshold test so a thin P/PET touch reads as NOT wet; \code{c(lo, hi)} HYSTERETIC on
+\code{prev_wet_near}. Chiefly affects Rice. See \code{?calcHarvestDateVector}.}
+
+\item{smooth_window}{Integer day-window for the daily-climatology smoothing -- the SINGLE
+global window applied to BOTH the threshold-crossing inputs (spring/fall temperature,
+hot-day, wet-season-end P/PET) AND the daily reductions (coldest/warmest-window means and
+anchor DOYs, driest-window P/PET, the moisture-trend diff). Default 31 (odd, so the
+centred smoothing/argmax is exactly symmetric). The raw daily
+climatology (\code{mclimate}) is kept; this sets the window the rules read it through.
+Forwarded to \code{calcSeasonality}/\code{calcSowingDate}/\code{calcHarvestRule}/
+\code{calcHarvestDate}/\code{calcHarvestDateVector}. The 120-day wettest window
+(\code{calcDoyWetMonth}) has its own fixed window and is unaffected.}
+
+\item{prev_seas}{Character seasonality class from last year (or \code{NA}),
+forwarded to \code{calcSeasonality} for class hysteresis. The class is
+crop-independent, so this is per-cell state; the resolved class is returned as
+\code{attr(., "seas_type")} for the caller to carry forward. See
+\code{?calcSeasonality}.}
+
+\item{seas_eps}{Non-negative seasonality-threshold deadband forwarded to
+\code{calcSeasonality} (default 0 = off).}
+
+\item{seas_mtemp_margin}{Absolute min-temperature deadband (deg C) forwarded to
+\code{calcSeasonality} as \code{mtemp_margin} (default 1; only used when
+\code{seas_eps > 0}).}
+
+\item{prev_harv}{Integer packed harvest-rule hysteresis state from last year (or
+\code{NA}), encoding the thermal class and the wet-near-sowing flag (\code{tclass +
+3*harv_hi}, \code{harv_hi = rw1 + 12*wet_near}). Unlike the seasonality/wet-window state this is
+crop-DEPENDENT, so the caller carries it per cell AND per crop. The resolved value is returned as
+\code{attr(., "harv_state")}. Used for the wet-near Schmitt window and when
+\code{harv_tmax_margin > 0}.}
+
+\item{harv_tmax_margin}{Absolute deadband (deg C, default 0 = off) on the harvest
+rule's \code{temp_max} vs base/optimum reproductive thresholds (thermal class),
+forwarded to \code{calcHarvestRule}. Suppresses harvest-formula flips from a
+grazing \code{temp_max}.}
+
+\item{harv_ppet_eps}{DEPRECATED, ignored. The always-wet test it deadbanded was retired:
+the no-wet-end \code{hd_last}/\code{hd_first} decision is now made by the persistence-guarded
+two-tier rule (wet-near gate at \code{ppet_ratio}, then the \code{ppet_min} floor) in
+\code{calcHarvestDateVector}, so there is no \code{min_ppet} graze to deadband. Kept in the
+signature only so existing callers do not error.}
+
+\item{prev_winter}{Integer winter regime last year (1 warm / 0 mild / -1 cold, or \code{NA}),
+forwarded to \code{calcSowingDate} for hysteresis on both winter-regime boundaries. Like the harvest
+state this is crop-DEPENDENT (the warm/cold/mild branch is gated on the crop's seasonality), so the
+caller carries it per cell AND per crop. The resolved regime is returned as
+\code{attr(., "winter_regime")}. Only winter-type crops act on it.}
+
+\item{winter_margin}{Absolute deadband (deg C, default 0 = off) on the WARM winter-regime boundary
+(\code{basetemp.low}), forwarded to \code{calcSowingDate}. Suppresses the ~half-year warm<->mild sowing
+flip when \code{coldest_t} grazes the boundary. See \code{?calcSowingDate}.}
+
+\item{winter_cold_margin}{Absolute deadband (deg C, default 0 = off) on the COLD winter-regime boundary
+(\eqn{-10}\,°C), forwarded to \code{calcSowingDate}. Decoupled from \code{winter_margin} so the
+continental autumn<->spring WW flip (Russia) can be widened independently. See \code{?calcSowingDate}.}
 }
 \description{
 Wrapper function calling sub-functions to
 calculate sowing and harvest dates.
 }
 \seealso{
-calcMonthlyClimate
+calcClimatology
 }

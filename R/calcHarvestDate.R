@@ -9,8 +9,6 @@
 #' the respective crop species.
 #'
 #' @param croppar data.frame with crop parematers as returned by getCropParam
-#' @param monthly_temp numeric vector of length 12. Mean monthly air temperature
-#' (degree Celsius).
 #' @param sowing_date numeric value as day of the year (DOY). This can be either
 #' caculated with calcSowingDate or prescribed.
 #' @param sowing_month numeric value between 0 and 12. 0 represents the "default
@@ -25,7 +23,6 @@
 #' @export
 
 calcHarvestDate <- function(croppar,
-                            monthly_temp,
                             sowing_date,
                             sowing_month,
                             sowing_season,
@@ -35,11 +32,13 @@ calcHarvestDate <- function(croppar,
                             ) {
 
   # Extract individual parameter names and values
-  for (i in colnames(croppar)) {
-    assign(i, croppar[[i]])
-  }
+  list2env(croppar, environment())  # 1-row data.frame: columns -> scalar params
 
   ndays_year <- 365
+
+  # NB: the "too cold to grow" guards below key on sowing_month==0 alone, consistent with the sowing
+  # decision, so no warmest-window temperature is computed here (hence no monthly_temp / daily_temp /
+  # smooth_window arguments in the signature).
 
   # Extract individual individual values from hd_vector
   for (i in names(hd_vector)) {
@@ -113,7 +112,13 @@ calcHarvestDate <- function(croppar,
         hd_rf <- hd_first
         hd_ir <- hd_first
       } else if (harvest_rule==6) {
-        if (sowing_month==0 && max(monthly_temp) < temp_fall) {
+        if (sowing_month==0) {
+          # DEFAULT sowing = calcSowingDate found no real season (no sustained temp_fall/temp_spring
+          # crossing) -> too cold/short to grow, harvest as early as possible. The guard keys on the
+          # sowing verdict (sowing_month==0) alone rather than re-testing the warmest-window temperature
+          # against temp_fall: the sowing decision already made that call, with a sustained daily
+          # crossing, so re-testing it here with a bare window mean could disagree in the cold-marginal
+          # band and flip the harvest hd_first<->hd_last at otherwise-stable sowing.
           hd_rf <- hd_first
           hd_ir <- hd_first
         } else {
@@ -139,7 +144,11 @@ calcHarvestDate <- function(croppar,
         hd_rf <- hd_first
         hd_ir <- hd_first
       } else if (harvest_rule==6){
-        if (sowing_month==0 && max(monthly_temp) < temp_spring) {
+        if (sowing_month==0) {
+          # DEFAULT sowing -> no real season found -> harvest as early as possible. Keyed on the sowing
+          # verdict (sowing_month==0) alone rather than re-testing the warmest-window temperature against
+          # temp_spring (the spring analogue of the winter-type guard above), for the same consistency
+          # reason.
           hd_rf <- hd_first
           hd_ir <- hd_first
         } else if (seasonality=="PRECTEMP") { # T not stressful, only water limitation applies

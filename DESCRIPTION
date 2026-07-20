@@ -1,7 +1,7 @@
 Package: cropCalendars
 Type: Package
-Title: Compute rule-base crop sowing and harvest dates.
-Version: 0.1.2
+Title: Compute Rule-Based Crop Sowing and Harvest Dates
+Version: 0.2.0
 Author: Sara Minoli <minoli@pik-potsdam.de>
 Maintainer:
     Sara Minoli <minoli@pik-potsdam.de>
@@ -12,8 +12,10 @@ Imports:
     data.table
 Suggests:
     zoo,
-    ggplot2
+    ggplot2,
+    scales,
+    RColorBrewer,
+    testthat
 License: GPL-3
 Encoding: UTF-8
-LazyData: true
-RoxygenNote: 7.1.2
+RoxygenNote: 7.3.3

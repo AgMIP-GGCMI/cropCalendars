@@ -13,13 +13,21 @@ print(starttime)
 
 # ------------------------------------ #
 # General settings
-work_dir <- setwd(paste(
-  "/p/projects/macmit/users/cmueller/repos/cropCalendars/utils/ggcmi_ph3/"
-))
-source(paste0(work_dir, "/00_config.R"))
+# Run from the pipeline dir: sbatch passes --chdir=$WD, interactive runs cd there.
+work_dir <- getwd()
+source(file.path(work_dir, "00_config.R"))
 
 makeplot <- TRUE
-NCELLS   <- 67420
+
+# Read the LPJmL grid here (the only stage that needs it, for the .clm output).
+# lpjmlkit::read_io auto-detects the header; round to the grid's native 0.01-degree
+# resolution. grid_df is passed explicitly to generatePHUTserie_isimip3().
+library(lpjmlkit)
+grid_io <- suppressWarnings(read_io(grid_file, silent = TRUE))
+grid_df <- data.frame(
+  lon = round(as.numeric(grid_io$data[, 1, 1]), 2),
+  lat = round(as.numeric(grid_io$data[, 1, 2]), 2)
+)
 
 # ------------------------------------ #
 # Individual-run settings
@@ -28,85 +36,64 @@ if (cluster_job == TRUE) {
   options(echo = FALSE) # if you want see commands in output file
   args <- commandArgs(trailingOnly = TRUE)
 } else {
-  args <- c("GFDL-ESM4", "ssp585", "mai", "rf")
+  args <- c("GFDL-ESM4", "ssp585")
 }
 print(args)
 
 # ------------------------------------ #
-# Select variable, crop, model, year
+# One compact job per gcm x scenario: all crops x irrigations are processed in a single
+# call so each year's daily temperature is read once and reused across crops.
 gcm    <- args[1]
 scen   <- args[2]
-cro    <- args[3]
-irri   <- args[4]
+ncores <- if (length(args) >= 3) as.integer(args[3]) else as.integer(Sys.getenv("SLURM_CPUS_PER_TASK", "1"))
+# CROPS env (ggcmi tokens, comma- or space-separated) restricts the crop set; default all.
+crops_env <- trimws(unlist(strsplit(Sys.getenv("CROPS", ""), "[, ]+")))
+crops_env <- crops_env[nzchar(crops_env)]
+cros  <- if (length(crops_env) > 0) crops_env else crop_ls[["ggcmi"]]
+irris <- c("rf", "ir")
 
-if (scen == "2015gs") {
-
-  FYnc <- 2015 # first year ncdf output file
-  LYnc <- 2100 # last year ncdf output file
-
-  # Sowing and cultivar to change every 10 years
-  SYs <- 2015 # Start of the period
-  EYs <- 2020 # End of the period
-  # Computing sowing and harvest dates based on preceding 30-years climate
-  FYs <- 1981 # First year DT file (output of main.R)
-  LYs <- 2010 # Last  year DT file (output of main.R)
-
-  nhist <- length(EYs[EYs < 2015]) # number of historical time slices
-  HYs <- c(rep("historical", nhist), rep("ssp126", length(SYs)-nhist)) # historical/ssp years
-
-} else if (scen == "historical") {
-
-  # first and last year of ncdf files
-  FYnc <- 1881
-  LYnc <- 2014
-
-  # Sowing and cultivar to change every 10 years
-  SYs <-   seq(1881, 2011, by = 10) # Start of the period
-  EYs <- c(seq(1890, 2014, by = 10), 2014) # End of the period
-  # Computing sowing and harvest dates based on preceding 30-years climate
-  FYs <-   seq(1851, 1981, by = 10) # First year DT file (output of main.R)
-  LYs <-   seq(1880, 2010, by = 10) # Last  year DT file (output of main.R)
-
-  HYs <- rep(scen, length(SYs))
-
+# DRS crop-calendar directory + soc token (output of stage 02). ISIMIP3a observational
+# scenarios (obsclim/spinclim -> histsoc, counterclim -> countersoc) -> ISIMIP3a; ESMs ->
+# ISIMIP3b per gcm x soc. MUST mirror stage 02 (02_assemble_annual_ncdf.R) exactly.
+if (scen %in% isimip3a_scenarios) {
+  soc_file <- if (scen == "counterclim") "countersoc" else "histsoc"
+  cal_dir  <- paste0(output_dir, "ISIMIP3a/InputData/socioeconomic/crop_calendar/", soc_file, "/")
 } else {
-
-  FYnc <- 2015 # first year ncdf output file
-  LYnc <- 2100 # last year ncdf output file
-
-  # Sowing and cultivar to change every 10 years
-  SYs <- c(2015, seq(2021, 2091, by = 10)) # Start of the period
-  EYs <- c(2020, seq(2030, 2100, by = 10)) # End of the period
-  # Computing sowing and harvest dates based on preceding 30-years climate
-  FYs <- seq(1981, 2061, by = 10) # First year DT file (output of main.R)
-  LYs <- seq(2010, 2090, by = 10) # Last  year DT file (output of main.R)
-
-  nhist <- length(EYs[EYs < 2015]) # number of historical time slices
-  HYs <- c(rep("historical", nhist), rep(scen, length(SYs)-nhist)) # historical/ssp years
-
+  soc_dir  <- if (scen == "historical") "historical" else paste0(scen, "soc-adapt")
+  soc_file <- if (scen == "historical") "histsoc" else scen
+  cal_dir  <- paste0(output_dir, "ISIMIP3b/InputData/socioeconomic/crop_calendar/", gcm, "/", soc_dir, "/")
 }
 
-print(data.frame(SYs, EYs, FYs, LYs, HYs, FYnc, LYnc))
+# Derive the product year range from any stage-02 file (all crops share it): stage 02
+# names the file from the discovered emit_years (min/max), so reading it back keeps the
+# two stages on a single source of truth.
+hits <- Sys.glob(paste0(cal_dir, "ggcmi-crop-calendar_", tolower(gcm), "_", soc_file, "_*_annual_*.nc"))
+if (length(hits) == 0)
+  stop("Stage-02 crop-calendar files not found (run stage 02 first): ", cal_dir)
+m <- regmatches(basename(hits[1]),
+                regexec("_annual_([0-9]{4})_([0-9]{4})\\.nc$", basename(hits[1])))[[1]]
+if (length(m) != 3)
+  stop("Cannot parse the product year range from: ", basename(hits[1]))
+FYnc <- as.integer(m[2]); LYnc <- as.integer(m[3])
 
-years  <- FYnc:LYnc
-nyears <- length(years)
-
-ncdir  <- paste0(output_dir, "crop_calendars/ncdf/", gcm, "/", scen, "/")
+ncdir  <- paste0(output_dir, "crop_calendars/ncdf/", gcm, "/", scen, "/")  # PHU .nc4 output
+if (!dir.exists(ncdir)) dir.create(ncdir, recursive = TRUE)
 
 # ------------------------------------------------------#
-# Compute PHUs and Write ncdfs
+# Compute decadal PHUs and write one netCDF per crop x irrigation.
 
 generatePHUTserie_isimip3(
-    ncdir         = ncdir,
-    gcm           = gcm,
-    scen          = scen,
-    cro           = cro,
-    irri          = irri,
-    SYs           = SYs,
-    EYs           = EYs,
-    FYnc          = FYnc,
-    LYnc          = LYnc,
-    crop_par_file = NULL
+    ncdir    = ncdir,
+    gcm      = gcm,
+    scen     = scen,
+    cros     = cros,
+    irris    = irris,
+    FYnc     = FYnc,
+    LYnc     = LYnc,
+    grid_df  = grid_df,
+    cal_dir  = cal_dir,
+    soc_file = soc_file,
+    ncores   = ncores
 )
 
 # ------------------------------------------------------#

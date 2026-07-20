@@ -4,14 +4,66 @@
 \alias{calcDoyCrossThreshold}
 \title{Calculate day of crossing threshold}
 \usage{
-calcDoyCrossThreshold(monthly_value, threshold)
+calcDoyCrossThreshold(
+  daily_value,
+  threshold,
+  min_duration = 1L,
+  from = 1L,
+  min_area = 0
+)
 }
 \arguments{
-\item{monthly_value}{numeric vector of length 12 representing monthly value
-of a variable.}
+\item{daily_value}{Numeric vector of length 365. Climatological daily
+values of the variable (e.g. temperature), one per DOY, averaged across
+the reference period. Typically the \code{dtemp} element returned by
+\code{calcClimatology}.}
 
-\item{threshold}{numeric value representing a threshold.}
+\item{threshold}{Numeric. Threshold value for crossing detection.}
+
+\item{min_duration}{Integer >= 1. Minimum number of consecutive days the
+excursion must persist for a crossing to count (a "sustained-excursion"
+guard). With \code{min_duration = 1L} (default) the behaviour is unchanged:
+the first day-to-day sign change is returned. With larger values, a crossing
+is only accepted if the variable stays on the new side of \code{threshold}
+for at least \code{min_duration} days (evaluated circularly), so a single-day
+noise blip in the daily climatology cannot register as a spurious crossing
+(e.g. a 1-day dip-and-recover through \code{temp_spring} in the autumn
+descent producing a sowing date ~130 days early).}
+
+\item{from}{Integer DOY (1..365, default 1) at which the circular scan for the
+"first" crossing begins. The first candidate at or after \code{from} (wrapping
+across the year boundary) is returned. The default \code{from = 1L} reproduces
+the original "first crossing from Jan 1" behaviour. Anchoring the scan to a
+stable phenological reference removes the spurious-crossing ambiguity in mild
+climates: e.g. for the spring up-crossing, starting from the coldest day skips
+an autumn temperature plateau grazing the threshold (which sits \emph{before}
+the winter minimum) and lands on the genuine spring warming crossing -- without
+introducing any temporal lag.}
+
+\item{min_area}{Non-negative integrated-excursion budget (default 0 = off). A crossing is
+accepted only if the excursion onto the new side accumulates
+\eqn{\sum |daily\_value - threshold| \ge min\_area} over its consecutive new-side run
+(a "deficit-days" area, evaluated circularly). This magnitude-weights the persistence
+guard: unlike \code{min_duration} (a pure day-count), a grazing crossing
+(small \eqn{|value - threshold|}) must persist much longer to qualify, while a decisive
+excursion triggers quickly -- suppressing spurious wet-end detections where the smoothed
+P/PET merely brushes \code{ppet_ratio}. Applied in addition to \code{min_duration}.}
+}
+\value{
+Named list with two elements:
+  \describe{
+    \item{doy_cross_up}{First DOY at/after \code{from} where \code{daily_value}
+      crosses upward through \code{threshold} (i.e. was below on the previous day,
+      at or above today) and stays above for \code{min_duration} days.
+      \code{-9999} if no such upward crossing exists.}
+    \item{doy_cross_down}{First DOY at/after \code{from} where \code{daily_value}
+      crosses downward through \code{threshold} and stays below for
+      \code{min_duration} days. \code{-9999} if none.}
+  }
 }
 \description{
-Calculate days where thresholds are crossed from monthly values
+Find the DOY where a climatological daily variable crosses a
+threshold, evaluated on actual daily data (365 values per DOY, averaged
+across years). The comparison wraps circularly so crossings between
+December 31 and January 1 are detected.
 }

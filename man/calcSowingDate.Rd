@@ -4,17 +4,108 @@
 \alias{calcSowingDate}
 \title{Calculate sowing date (Waha et al., 2012)}
 \usage{
-calcSowingDate(croppar, monthly_temp, monthly_ppet, seasonality, lat)
+calcSowingDate(
+  croppar,
+  monthly_temp,
+  daily_prec = NULL,
+  daily_pet = NULL,
+  daily_temp = NULL,
+  seasonality,
+  lat,
+  prev_wet_doy = NA_integer_,
+  wet_window_eps = 0,
+  wet_window_decay = 0.3,
+  cross_min_duration = 1L,
+  wet_doy = NULL,
+  monthly_prec = NULL,
+  monthly_pet = NULL,
+  smooth_window = 31L,
+  prev_winter = NA_integer_,
+  winter_margin = 0,
+  winter_cold_margin = 0
+)
 }
 \arguments{
 \item{monthly_temp}{Numeric vector of length 12. Average (e.g. 20-years)
-monthly mean temperatures (degree Celsius).}
+monthly mean temperatures (degree Celsius). Retained as a fallback: the
+coldest-month temperature and the coldest-day anchor are taken from
+\code{daily_temp} (coldest 30-day window) when supplied, and only derived from
+these monthly values if \code{daily_temp} is \code{NULL}.}
 
-\item{monthly_ppet}{Numeric vector of length 12. Average (e.g. 20-years)
-monthly P/PET ratio.}
+\item{daily_prec}{Numeric vector of length 365. Climatological daily
+precipitation (mm, one value per DOY, averaged across years). The
+\code{dprec} element from \code{calcClimatology}. Used by
+\code{calcDoyWetMonth} (with \code{daily_pet}) to find the start of the wet
+season as the wettest 120-day window (\eqn{\sum P / \sum PET}). Preferred input
+for the wettest-window start in PREC/PRECTEMP cells; if absent, the monthly
+fallback (\code{monthly_prec} / \code{monthly_pet}) is used instead.}
+
+\item{daily_pet}{Numeric vector of length 365. Climatological daily PET (mm,
+one value per DOY). The \code{dpet} element from \code{calcClimatology}.
+Paired with \code{daily_prec} (see there).}
+
+\item{daily_temp}{Numeric vector of length 365. Climatological daily mean
+temperature (°C), one value per DOY (the \code{dtemp} element from
+\code{calcClimatology}). Used for the coldest-month reductions (coldest
+30-day window mean and centre DOY) and by \code{calcDoyCrossThreshold} for the
+spring/fall threshold crossings. \code{NULL} falls back to the legacy monthly
+rule (calendar-month minimum and coldest-month mid-day) and interpolates the
+monthly means onto the daily grid for the crossings.}
 
 \item{seasonality}{character value indicating the seasonality type as
 computed by calcSeasonality}
+
+\item{prev_wet_doy}{Integer DOY of last year's wettest-window start (or
+\code{NA}), forwarded to \code{calcDoyWetMonth} for temporal hysteresis in the
+PREC/PRECTEMP sowing branch. Only used when \code{wet_window_eps > 0}.}
+
+\item{wet_window_eps}{Non-negative relative hysteresis band forwarded to
+\code{calcDoyWetMonth} (default 0 = off). See \code{?calcDoyWetMonth}.}
+
+\item{wet_window_decay}{Positive Gaussian decay scale forwarded to
+\code{calcDoyWetMonth} (default 0.3; smaller = stickier). See
+\code{?calcDoyWetMonth}.}
+
+\item{cross_min_duration}{Integer minimum sustained-excursion length (days)
+forwarded to \code{calcDoyCrossThreshold} for the spring/fall temperature
+crossings (default 1 = off). See \code{?calcDoyCrossThreshold}.}
+
+\item{wet_doy}{Optional pre-computed wettest-window start DOY (the crop-independent
+\code{calcDoyWetMonth} result). When supplied it is used directly in the
+PREC/PRECTEMP spring-sowing branch, so the caller (\code{calcCropCalendars}) can
+compute it once per cell instead of twice. \code{NULL} (default) recomputes it.}
+
+\item{monthly_prec, monthly_pet}{Optional numeric vectors of length 12, the
+monthly precipitation and PET TOTALS (the \code{mprec} / \code{mpet} elements
+from \code{calcClimatology}). Used only as the bug-free monthly fallback for
+the wettest-window start in PREC/PRECTEMP cells, when
+\code{daily_prec}/\code{daily_pet} (and \code{wet_doy}) are not supplied: the
+wettest 4-month ratio-of-sums (\eqn{\sum P / \sum PET}). Coarser (~1-month
+resolution) than the daily 120-day rule, but identical in form (sums P and PET
+separately, no daily interpolation).}
+
+\item{smooth_window}{Integer day-window for the daily-climatology smoothing -- the
+single global window applied to BOTH the threshold-crossing input (\code{daily_temp}
+smoothed before the spring/fall crossings) AND the daily reductions here (coldest-window
+mean and coldest/warmest anchor DOYs). Default 31 (odd). See \code{calcCropCalendars}. The raw
+daily climatology is still kept; this only sets the window the rules read it through.}
+
+\item{prev_winter}{Integer winter regime chosen last year (1 = warm, 0 = mild, -1 = cold), or
+\code{NA} (default). Used (when \code{winter_margin > 0} or \code{winter_cold_margin > 0}) to make the
+winter-regime boundaries (\code{basetemp.low} and \eqn{-10}\,°C) hysteretic. Returned as
+\code{attr(., "winter_regime")} for the caller to carry forward. Only winter-type
+(\code{WTYP_CALC_SDATE}) crops act on it.}
+
+\item{winter_margin}{Absolute deadband (deg C, default 0 = off) on the WARM winter-regime boundary
+(\code{basetemp.low}, the warm<->mild / autumn-anchor split). With a prior regime it relaxes toward
+last year's regime so the regime is sticky within a \code{2 * winter_margin} band, suppressing the
+~half-year warm<->mild sowing flip when \code{coldest_t} grazes the boundary. Mirrors
+\code{seas_mtemp_margin} / \code{harv_tmax_margin}.}
+
+\item{winter_cold_margin}{Absolute deadband (deg C, default 0 = off) on the COLD winter-regime boundary
+(\eqn{-10}\,°C, the mild<->cold / autumn-sowing<->spring-fallback split). Decoupled from
+\code{winter_margin} so the continental cold boundary (Russia autumn<->spring WW flip) can be widened
+independently of the warm boundary. Same prior-regime relaxation (sticky within \code{2 * winter_cold_margin}).}
 }
 \description{
 Calculate sowing date (Waha et al., 2012)

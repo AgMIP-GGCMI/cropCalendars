@@ -6,7 +6,6 @@
 \usage{
 calcHarvestDate(
   croppar,
-  monthly_temp,
   sowing_date,
   sowing_month,
   sowing_season,
@@ -17,9 +16,6 @@ calcHarvestDate(
 }
 \arguments{
 \item{croppar}{data.frame with crop parematers as returned by getCropParam}
-
-\item{monthly_temp}{numeric vector of length 12. Mean monthly air temperature
-(degree Celsius).}
 
 \item{sowing_date}{numeric value as day of the year (DOY). This can be either
 caculated with calcSowingDate or prescribed.}

@@ -7,6 +7,13 @@
 #'
 #' @details This is the rule suggested by Portman et al. 2010, slightly
 #' changed in that <= 7 instead of 6°C is used.
+#'
+#' Single-cell wrapper around the vectorised core \code{.wintercrop_vec} (the one source of
+#' truth, in \code{generatePHUTserie_isimip3.R}): a long season (growp >= 150 d) whose
+#' coldest month is cold-but-not-killing (tcm in [-10, 7]) and that overwinters -- crossing
+#' the year boundary in the N hemisphere, or mid-winter (DOY 182) in the S -- is a winter
+#' crop (1), else 0. Returns 0/1 (integer). Unlike the former scalar body it returns NA
+#' rather than erroring when \code{end} is NA.
 #' @export
 isWinterCrop <- function(start = NULL,
                          end   = NULL,
@@ -14,31 +21,6 @@ isWinterCrop <- function(start = NULL,
                          lat   = NULL
                          ) {
 
-  # tcm = temp of coldest month
-  # start / end = sdate / hdate
-
-  growp <- ifelse(start <= end, end - start, 365 + end - start)
-  wc <- 0
-
-  if (!is.na(start) && start > 0 && !is.na(lat) && !is.na(tcm)) {
-
-    if (lat > 0) {
-
-      if ( ((start + growp > 365) && (growp >= 150)) &&
-           (tcm >= -10 && tcm <= 7) ) {
-        wc <- 1
-      }
-
-    } else {
-
-      if ( ((start < 182) && (start + growp > 182) && (growp >= 150)) &&
-           (tcm >= (-10) && tcm <= 7) ) {
-        wc <- 1
-      }
-
-    }
-  }
-
-  return(wc)
+  .wintercrop_vec(start, end, tcm, lat)[1L]
 
 }

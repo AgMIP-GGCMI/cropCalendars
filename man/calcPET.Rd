@@ -4,15 +4,30 @@
 \alias{calcPET}
 \title{Calculate Potential Evapo-Transpiration (PET)}
 \usage{
-calcPET(temp, lat, day)
+calcPET(temp, lat = NULL, day = NULL, swdown = NULL, lwdown = NULL)
 }
 \arguments{
-\item{temp}{mean temperature (degree Celsius)}
+\item{temp}{mean daily temperature (degree Celsius)}
 
-\item{lat}{latitude}
+\item{lat}{latitude (decimal degrees)}
 
 \item{day}{day of the year (DOY)}
+
+\item{swdown}{surface downwelling shortwave radiation (W/m2, 24 h mean).
+If NULL the legacy orbital-geometry estimate is used.}
+
+\item{lwdown}{surface downwelling longwave radiation (W/m2, 24 h mean).
+Required when \code{swdown} is provided.}
+}
+\value{
+potential evapotranspiration (mm/day)
 }
 \description{
-Calculate potential ET as in LPJmL numeric/petpar.c
+Calculate equilibrium (Priestley-Taylor) potential ET as in
+LPJmL numeric/petpar.c.  When \code{swdown} and \code{lwdown} are supplied,
+net radiation is computed from observed radiation fluxes:
+  Rns = (1 - 0.23) * swdown * 86400  [J/m2/day]  (albedo matches FAO-56)
+  Rnl = (lwdown - sigma * (T+273.15)^4) * 86400  [J/m2/day]
+Otherwise net radiation is estimated from orbital geometry with a fixed
+sunshine fraction (legacy behaviour, backward-compatible).
 }

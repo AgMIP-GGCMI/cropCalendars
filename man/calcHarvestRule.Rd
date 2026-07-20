@@ -4,7 +4,37 @@
 \alias{calcHarvestRule}
 \title{Calculate harvest rule (Minoli et al., 2019)}
 \usage{
-calcHarvestRule(croppar, monthly_temp, monthly_ppet, seasonality)
+calcHarvestRule(
+  croppar,
+  monthly_temp,
+  monthly_ppet,
+  seasonality,
+  daily_temp = NULL,
+  prev_tclass = NA_integer_,
+  harv_tmax_margin = 0,
+  smooth_window = 31L
+)
+}
+\arguments{
+\item{daily_temp}{Numeric vector of length 365, the climatological daily mean
+temperature (\code{dtemp} from \code{calcClimatology}). When supplied, the
+warmest-month temperature uses the warmest 30-day window mean of this series
+instead of \code{max(monthly_temp)} (continuous, no month-boundary
+quantisation). \code{NULL} (default) uses the monthly maximum (backward compatible).}
+
+\item{prev_tclass}{Integer thermal class chosen last year (0 = t-low, 1 = t-mid,
+2 = t-high), or \code{NA} (default). Used only when \code{harv_tmax_margin > 0}
+to apply a deadband on the base/optimum temperature thresholds.}
+
+\item{harv_tmax_margin}{Absolute deadband (deg C, default 0 = off) on the
+\code{temp_base_rphase} / \code{temp_opt_rphase} thresholds: with a prior class,
+each threshold is relaxed toward keeping last year's thermal class (thermostat),
+so a sub-degree \code{temp_max} wobble between sliding windows no longer flips the
+harvest rule -- and hence the whole harvest formula. Mirrors \code{seas_mtemp_margin}.}
+
+\item{smooth_window}{Integer day-window for the daily-climatology reductions (here the
+warmest-window mean driving the thermal class); the single global smoothing window
+(default 31). See \code{calcCropCalendars}.}
 }
 \description{
 This function performs an agro-climatic classification of

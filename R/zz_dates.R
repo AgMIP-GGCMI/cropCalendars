@@ -62,25 +62,6 @@ seqDates <- function(start_date = "1980-01-01",
   )
 }
 
-# Check if date is 29th February
-is29Feb <- function(date = "1980-01-01"
-                    ) {
-  day <- format(as.Date(date), "%d")
-  mon <- format(as.Date(date), "%m")
-
-  return(paste(mon, day) == "02 29")
-}
-
-# Convert day-of-the-year (DOY) to date "YYYY-MM-DD"
-doy_to_date <- function(doy  = NULL,
-                        year = NULL
-                        ) {
-  if (length(doy) != length(year)) stop("doy and year have different length")
-
-  date <- strptime(paste(year, doy), format = "%Y %j")
-  return(date)
-}
-
 # Convert date "YYYY-MM-DD" to day-of-the-year (DOY)
 date_to_doy <- function(date       = "2010-01-29",
                         skip_feb29 = TRUE
@@ -92,8 +73,10 @@ date_to_doy <- function(date       = "2010-01-29",
     doy_dec31 <- as.integer(format(as.Date(dec31), "%j"))
     # Convert date to DOY, including Feb. 29
     doy1 <- as.integer(format(as.Date(date), "%j"))
-    # If is leap year, subtract 1 to all DOYs after Feb. 28
-    doy <- ifelse(doy_dec31 == 366 & doy1 > 28,
+    # If leap year, subtract 1 from all DOYs after Feb. 28 (day-of-year 59), so
+    # Feb. 29 folds onto DOY 59 (shared with Feb. 28) and Mar. 1..Dec. 31 stay
+    # aligned with non-leap years. (Previously `> 28`, which mis-folded at Jan. 29.)
+    doy <- ifelse(doy_dec31 == 366 & doy1 > 59,
                   doy1 - 1,
                   doy1)
   } else {

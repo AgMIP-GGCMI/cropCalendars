@@ -1,4 +1,4 @@
-test_that("calcMonthlyClimate returns a list", {
+test_that("calcClimatology returns a list", {
   # Read sample daily climate
   syear <- 1991
   eyear <- 2000
@@ -15,7 +15,7 @@ test_that("calcMonthlyClimate returns a list", {
   d_prec <- unlist(read.csv(prec_fn, header = F))
 
   # Calculate monthly climate
-  mclm <- cropCalendars::calcMonthlyClimate(
+  mclm <- cropCalendars::calcClimatology(
     lat = grid_sample$lat,
     temp = d_temp,
     prec = d_prec,

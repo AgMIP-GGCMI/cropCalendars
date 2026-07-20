@@ -5,3 +5,6 @@
 .Ruserdata
 .Rbuildignore
 *.swp
+
+# SLURM job logs from pipeline runs
+utils/ggcmi_ph3/logs/
